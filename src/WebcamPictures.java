@@ -58,7 +58,7 @@ public class WebcamPictures {
 				int b = 0;
 				BufferedImage image = webcam.getImage();
 				BufferedImage reconstructed = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
+				
 				try {
 					ImageIO.write(image, "PNG", new File("test"+numPictures+".png"));
 					int[] imageColors = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
@@ -67,7 +67,8 @@ public class WebcamPictures {
 					int x = 0;
 					int y = 0;
 					int average = 0;
-					
+					int img[][] = new int[image.getHeight()][image.getWidth()];
+					double expandedImg[][];
 					while (count < imageColors.length) {
 						if (x==image.getWidth()) {
 							x = 0;
@@ -78,10 +79,36 @@ public class WebcamPictures {
 						g = color.getGreen();
 						b = color.getBlue();
 						average = (r+g+b)/3;
+						
+						// Creating average array to be passed for compression 
+						img[y][x] = average;
+						
+						
+//						reconstructed.setRGB(x, y, new Color(average, average, average).getRGB());
+						x++;
+						count++;
+					}
+					
+					
+					
+					ImageCompression imgCompression = new ImageCompression(img);
+					expandedImg = imgCompression.expandedImage;
+					count = 0; 
+					x = 0;
+					y = 0;					
+					while (count < imageColors.length) {
+						if (x==image.getWidth()) {
+							x = 0;
+							y++;
+						}
+						
+						average = (int)expandedImg[y][x];	
 						reconstructed.setRGB(x, y, new Color(average, average, average).getRGB());
 						x++;
 						count++;
 					}
+					
+					
 					ImageIO.write(reconstructed, "PNG", new File("reconstructed"+numPictures+".png"));
 					numPictures++;
 				} catch (IOException ex){
