@@ -27,6 +27,20 @@ public class Connection {
 		return true;
 	}
 	
+	public boolean sendData(byte[] requestData, InetAddress ip) throws Exception{
+		// Initiate the DatagramSocket
+		DatagramSocket socket;
+		socket = new DatagramSocket();
+		socket.setBroadcast(true);
+		
+		// Create and send the packet
+		DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, ip, 8888);
+		socket.send(requestPacket);
+    	
+		socket.close();
+		return true;
+	}
+	
 	public InetAddress getServerIP(){
 		return this.serverIP;
 	}
@@ -49,7 +63,7 @@ public class Connection {
 				// Continue listening
 				while(continueListening){
 					// Receive a packet
-					byte[] received = new byte[10000];
+					byte[] received = new byte[350000];
 					DatagramPacket packet = new DatagramPacket(received, received.length);
 			        socket.receive(packet);
 			        
@@ -68,7 +82,9 @@ public class Connection {
 			        	// Place wrapper functions here
 			        	System.out.println("Data Received From: " + packet.getAddress().getHostAddress());
 			        	System.out.println("Data: " + new String(packet.getData()));
+			        	
 			        }
+			        
 				}
 		    	
 		    	socket.close();
@@ -93,37 +109,24 @@ public class Connection {
 		// Create the response header
 		byte[] request = "DISCOVERY".getBytes();
 		
-		// Create and send the packet
+		// Create and send the packet to the local subnet
 		DatagramPacket requestPacket = new DatagramPacket(request, request.length, InetAddress.getByName("255.255.255.255"), 8888);
 		socket.send(requestPacket);
 		
-		// Iterate through all network interfaces and check for the server
-		Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-		while (interfaces.hasMoreElements()) {
-			NetworkInterface networkInterface = interfaces.nextElement();
-			
-			// Filter out loopback and interfaces that don't point to servers
-		    if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-		      continue;
-		    }
-		    
-		    // Iterate over the addresses
-		    for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-		      InetAddress broadcast = interfaceAddress.getBroadcast();
-		      // If there is no server, don't send a packet
-		      if (broadcast == null) {
-		        continue;
-		      }
+		// Send packet across subnets
+		InetAddress tempAddr;
+		String[] ipAddress = InetAddress.getLocalHost().toString().split("/")[1].split("\\.");
+
+		for(int i=0; i<255; i++){
+			// Check addresses on specified subnet
+			tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + i + ".0");
+			requestPacket = new DatagramPacket(request, request.length, tempAddr, 8888);
+			socket.send(requestPacket);
+	      }
 		
-		      // Found a server, send the packet
-		      requestPacket = new DatagramPacket(request, request.length, broadcast, 8888);
-		      socket.send(requestPacket);
-		
-		    }
-		}
 		
 		// Declare the receiving byte array
-		byte[] response = new byte[15000];
+		byte[] response = new byte[350000];
 		// Receive the packet
 		DatagramPacket responsePacket = new DatagramPacket(response, response.length);
 		socket.receive(responsePacket);
@@ -138,7 +141,7 @@ public class Connection {
 			// Return the IP address
 			return responsePacket.getAddress();
 		}
-
+	
 		// Close the socket
 		socket.close();
 		
