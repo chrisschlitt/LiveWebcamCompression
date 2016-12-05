@@ -7,5 +7,5 @@ public class ServerSide {
 		// Begin listening
 		connection.beginListening();
 	}
- 
+
 }

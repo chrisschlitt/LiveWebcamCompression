@@ -2,7 +2,6 @@
 public class ClientSide {
 
 	public static void main(String[] args) throws Exception {
-		
 		// Create the client connection
 		Connection connection = new Connection();
 		connection.getIP();
@@ -15,7 +14,7 @@ public class ClientSide {
 		if(connection.sendData(request)){
 			System.out.println("Sent message successfully");
 		}
-		 
+		
 	}
 
 }
