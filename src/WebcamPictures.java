@@ -68,7 +68,7 @@ public class WebcamPictures {
 					int y = 0;
 					int average = 0;
 					int img[][] = new int[image.getHeight()][image.getWidth()];
-					double expandedImg[][];
+					int[][] expandedImg;
 					while (count < imageColors.length) {
 						if (x==image.getWidth()) {
 							x = 0;
@@ -92,7 +92,8 @@ public class WebcamPictures {
 					
 					
 					ImageCompression imgCompression = new ImageCompression(img);
-					expandedImg = imgCompression.expandedImage;
+					ImageReconstruction imgReconstruction = new ImageReconstruction(imgCompression.getCompressedImage());
+					expandedImg = imgReconstruction.getReconstructedImage();
 					count = 0; 
 					x = 0;
 					y = 0;					
@@ -102,7 +103,7 @@ public class WebcamPictures {
 							y++;
 						}
 						
-						average = (int)expandedImg[y][x];	
+						average = expandedImg[y][x];	
 						reconstructed.setRGB(x, y, new Color(average, average, average).getRGB());
 						x++;
 						count++;
