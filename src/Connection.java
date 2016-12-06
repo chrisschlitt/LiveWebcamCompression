@@ -151,6 +151,7 @@ public class Connection {
                         // For testing purposes
                         System.out.println("Discovery packet received from: " + packet.getAddress().getHostAddress());
                         
+                        
                         // Set the client IP
                         Connection.this.connectedComputerIP = packet.getAddress();
                         
@@ -241,6 +242,10 @@ public class Connection {
         	for(int j=0; j<255; j++){
 	            // Check addresses on specified subnet
 	            tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
+	            // Check if sending message to own IP address and filter out
+	            if(tempAddr.equals(ipAddress)){
+	            	continue;
+	            }
 	            requestPacket = new DatagramPacket(request, request.length, tempAddr, this.port);
 	            socket.send(requestPacket);
 	            if(this.connectedComputerIP != null){
