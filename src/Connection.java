@@ -146,8 +146,13 @@ public class Connection {
                     socket.receive(packet);
                     
                     String message = new String(packet.getData()).trim();
-                    
-                    String fromAddr = packet.getAddress().getHostAddress().toString().split("/")[1];
+
+                    String fromAddr = "";
+                    try {
+                    	fromAddr = packet.getAddress().toString().split("/")[1];
+                    } catch (Exception e){
+                    	fromAddr = packet.getAddress().getHostAddress().toString();
+                    }
                     
                     // Route the message
                     if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
@@ -222,6 +227,7 @@ public class Connection {
         // Create and send the packet to the local subnet
         DatagramPacket requestPacket = new DatagramPacket(request, request.length, InetAddress.getByName("255.255.255.255"), this.port);
         socket.send(requestPacket);
+        socket.close();
         
         // Get the local IP address
         InetAddress tempAddr;
@@ -247,12 +253,18 @@ public class Connection {
 	            // Check addresses on specified subnet
 	            tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
 
+	            // System.out.println("Sending packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
+	            
 	            // Check if sending message to own IP address and filter out
 	            if(localAddr.trim().equals((ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j).trim())){
 	            	continue;
 	            }
 	            requestPacket = new DatagramPacket(request, request.length, tempAddr, this.port);
+	            
+	            socket = new DatagramSocket();
+	            socket.setBroadcast(true);
 	            socket.send(requestPacket);
+	            socket.close();
 	            
 	            if(this.connectedComputerIP != null){
 	            	// If the server has been found, break the loop
@@ -277,8 +289,6 @@ public class Connection {
         	}
         }
 
-        // Close the socket
-        socket.close();
     }
     
 }
