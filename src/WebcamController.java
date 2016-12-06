@@ -50,6 +50,7 @@ public class WebcamController {
 			serverView.setVisible(true);
 			menu.setVisible(false);
 			serverView.addSelectionListener(new CompressionSelect());
+			
 			serverModel.getPicture(webcam);
 			
 		}

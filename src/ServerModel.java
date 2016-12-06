@@ -10,8 +10,18 @@ import com.github.sarxos.webcam.WebcamResolution;
 
 public class ServerModel {
 	private static int numPictures=1;
+	private Connection connection = new Connection(null);
+	
+	public void setupConnection() {
+		connection.beginListening();
+	}
+	
+	public void sendPicture(byte[] compressedImage) throws Exception {
+		connection.sendData(compressedImage);
+	}
 	
 	public void getPicture(Webcam webcam) {
+		byte[] compressedBytes;
 		Color color;
 		int r = 0;
 		int g = 0;
@@ -51,8 +61,18 @@ public class ServerModel {
 			
 			
 			ImageCompression imgCompression = new ImageCompression(img);
-			ImageReconstruction imgReconstruction = new ImageReconstruction(imgCompression.getCompressedImage());
-			expandedImg = imgReconstruction.getReconstructedImage();
+			compressedBytes = imgCompression.getCompressedImage();
+			try {
+				sendPicture(compressedBytes);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			//ImageReconstruction imgReconstruction = new ImageReconstruction(imgCompression.getCompressedImage());
+			
+			
+			
+			/*expandedImg = imgReconstruction.getReconstructedImage();
 			count = 0; 
 			x = 0;
 			y = 0;					
@@ -71,11 +91,10 @@ public class ServerModel {
 			
 			ImageIO.write(reconstructed, "PNG", new File("reconstructed"+numPictures+".png"));
 			numPictures++;
+		 */
 		} catch (IOException ex){
 			ex.printStackTrace();
 		}
 	}
-
-	
 	
 }

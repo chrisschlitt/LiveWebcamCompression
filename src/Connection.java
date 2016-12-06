@@ -18,7 +18,7 @@ public class Connection {
     // The specified port to send/receive packets from
     private int port;
     // Receiving Model
-    private ClientModel receivingModel;
+    private ClientModel clientModel;
     
     /**
      * Constructor
@@ -29,7 +29,7 @@ public class Connection {
         this.connectedComputerIP = null;
         this.continueListening = false;
         this.port = port;
-        this.receivingModel = receivingModel;
+        this.clientModel = receivingModel;
     }
     
     /**
@@ -45,8 +45,8 @@ public class Connection {
      * 
      */
     public Connection(){
-    	this(8888, new ReceivingModel());
-        this.receivingModel = receivingModel;
+    	this(8888, new ClientModel());
+        this.clientModel = clientModel;
     }
     
     /**
@@ -192,8 +192,8 @@ public class Connection {
                         System.out.println("Data Received From: " + packet.getAddress().getHostAddress());
                         System.out.println("Data: " + new String(packet.getData()));
                         
-                        if(this.receivingModel != null){
-                        	Connection.this.receivingModel.receiveImage(packet.getData());
+                        if(Connection.this.clientModel != null){
+                        	Connection.this.clientModel.receiveImage(packet.getData());
                         }
                         
                         
