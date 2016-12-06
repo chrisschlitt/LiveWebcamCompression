@@ -10,8 +10,10 @@
 public class ClientSide {
     
     public static void main(String[] args) throws Exception {
-        // Create the client connection
+    	// Create the server connection over the default port
         Connection connection = new Connection();
+        // Connection connection = new Connection(8888);
+        
         // Begin listening
         connection.beginListening();
         // Discover the server
