@@ -15,15 +15,26 @@ public class Connection {
     private InetAddress connectedComputerIP;
     // A flag to continue listening
     private boolean continueListening;
+    // The specified port to send/receive packets from
+    private int port;
     
     /**
      * Constructor
      * 
-     * Sets the serverIP to null
+     * @param port: int - The port to send/receive packets from
      */
-    public Connection(){
+    public Connection(int port){
         this.connectedComputerIP = null;
         this.continueListening = false;
+        this.port = port;
+    }
+    
+    /**
+     * Constructor without a port
+     * 
+     */
+    public Connection(){
+    	this(8888);
     }
     
     /**
@@ -45,7 +56,7 @@ public class Connection {
         socket.setBroadcast(true);
         
         // Create and send the packet to the connected computer
-        DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, this.connectedComputerIP, 8888);
+        DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, this.connectedComputerIP, this.port);
         socket.send(requestPacket);
         
         // Close the socket
@@ -68,7 +79,7 @@ public class Connection {
         socket.setBroadcast(true);
         
         // Create and send the packet
-        DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, ip, 8888);
+        DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, ip, this.port);
         socket.send(requestPacket);
         
         // Close the socket
@@ -98,6 +109,14 @@ public class Connection {
     }
     
     /**
+     * A method to get the port
+     * @return port: int - The port to send/receive packets from
+     */
+    public int getPort(){
+    	return this.port;
+    }
+    
+    /**
      * A runnable class to manage incoming packets
      * 
      * @author christopherschlitt
@@ -113,8 +132,8 @@ public class Connection {
             try {
                 // Initiate the DatagramSocket
                 DatagramSocket socket;
-                // Listen on port 8888
-                socket = new DatagramSocket(8888, InetAddress.getByName("0.0.0.0"));
+                // Listen on specified port
+                socket = new DatagramSocket(Connection.this.port, InetAddress.getByName("0.0.0.0"));
                 socket.setBroadcast(true);
                 
                 // Continue listening
@@ -197,7 +216,7 @@ public class Connection {
         byte[] request = "DISCOVERY".getBytes();
         
         // Create and send the packet to the local subnet
-        DatagramPacket requestPacket = new DatagramPacket(request, request.length, InetAddress.getByName("255.255.255.255"), 8888);
+        DatagramPacket requestPacket = new DatagramPacket(request, request.length, InetAddress.getByName("255.255.255.255"), this.port);
         socket.send(requestPacket);
         
         // Get the local IP address
@@ -222,7 +241,7 @@ public class Connection {
         	for(int j=0; j<255; j++){
 	            // Check addresses on specified subnet
 	            tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
-	            requestPacket = new DatagramPacket(request, request.length, tempAddr, 8888);
+	            requestPacket = new DatagramPacket(request, request.length, tempAddr, this.port);
 	            socket.send(requestPacket);
 	            if(this.connectedComputerIP != null){
 	            	// If the server has been found, break the loop
