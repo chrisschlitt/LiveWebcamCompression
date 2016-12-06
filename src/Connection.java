@@ -57,32 +57,46 @@ public class Connection {
      * @throws Exception - If the connection failed due to a network issue
      */
     public boolean sendData(byte[] requestData) throws Exception{
-    	
-    	byte[] sendingData = new byte[1024];
-    	for(int i = 0; i < 1024; i++){
-    		sendingData[i] = requestData[i];
-    	}
-    	
-    	// Check if the computer has connected to another computer
-    	if(this.connectedComputerIP == null){
-    		return false;
-    	}
-    	
-        // Initiate the DatagramSocket
+    	// Initiate the DatagramSocket and DatagramPacket
         DatagramSocket socket;
-        socket = new DatagramSocket();
+        DatagramPacket requestPacket;
+    	
+    	// Send start packet
+    	byte[] sendData = "START_PACKET".getBytes();
+    	socket = new DatagramSocket();
         socket.setBroadcast(true);
-        // socket.setSendBufferSize(620000);
-
-    	System.out.println("Sending Data (SIZE=" + requestData.length + ")");
-    	System.out.println("Sending Data (MAX=" + socket.getSendBufferSize() + ")");
-        
-        // Create and send the packet to the connected computer
-        DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, this.connectedComputerIP, this.port);
+        requestPacket = new DatagramPacket(sendData, sendData.length, this.connectedComputerIP, this.port);
         socket.send(requestPacket);
-        
-        // Close the socket
         socket.close();
+    	
+    	
+    	byte[] sendingData;
+    	int b = 0;
+    	while(b < requestData.length){
+    		sendingData = new byte[1024];
+    		for(int i = 0; i < 1024; i++){
+    			sendingData[i] = requestData[b];
+    			b++;
+    			if(b >= requestData.length){
+    				break;
+    			}
+        	}
+    		socket = new DatagramSocket();
+            socket.setBroadcast(true);
+            requestPacket = new DatagramPacket(sendingData, sendingData.length, this.connectedComputerIP, this.port);
+            socket.send(requestPacket);
+            socket.close();
+    	}
+    	
+    	
+    	// Send end packet
+    	sendData = "END_PACKET".getBytes();
+    	socket = new DatagramSocket();
+        socket.setBroadcast(true);
+        requestPacket = new DatagramPacket(sendData, sendData.length, this.connectedComputerIP, this.port);
+        socket.send(requestPacket);
+        socket.close();
+    	
         return true;
     }
     
@@ -147,7 +161,8 @@ public class Connection {
      *
      */
     public class ListeningThread implements Runnable {
-        
+        byte[] receivedImage;
+        int receivedImageIndex;
     	/**
     	 * The run method
     	 */
@@ -199,19 +214,20 @@ public class Connection {
                     	// Received discovery response
                         // Set the server IP
                         Connection.this.connectedComputerIP = packet.getAddress();
+                    } else if(message.equals("START_PACKET")){
+                    	System.out.println("Received Start Packet");
+                    	this.receivedImage = new byte[1000000];
+                    	this.receivedImageIndex = 0;
+                    } else if(message.equals("END_PACKET")){
+                    	System.out.println("Received End Packet");
+                    	Connection.this.clientModel.receiveImage(this.receivedImage);
                     } else if(!fromAddr.equals(localAddr)) {
-                    	// Received other response
-                        // Place wrapper functions here
-                        System.out.println("Data Received From: " + packet.getAddress().getHostAddress());
-                        System.out.println("Data: " + new String(packet.getData()));
-                        
-                        if(Connection.this.clientModel != null){
-                        	System.out.println("Calling receiveImage");
-                        	Connection.this.clientModel.receiveImage(packet.getData());
-                        }
-                        
-                        
-                        
+                    	System.out.println("Received Portion Packet");
+                    	byte[] receivedPortion = packet.getData();
+                    	for(int i = 0; i < receivedPortion.length; i++){
+                    		this.receivedImage[this.receivedImageIndex] = receivedPortion[i];
+                    		this.receivedImageIndex++;
+                    	}
                         
                     }
                     
