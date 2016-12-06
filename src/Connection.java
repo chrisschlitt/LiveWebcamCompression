@@ -172,15 +172,12 @@ public class Connection {
                         // For testing purposes
                         System.out.println("Discovery packet received from: " + packet.getAddress().getHostAddress());
                         
-                        
                         // Set the client IP
                         Connection.this.connectedComputerIP = packet.getAddress();
                         
                         // Respond to the client, confirming this is the server
                         byte[] sendData = "DISCOVERY_RESPONSE".getBytes();
-                        //Send the response
-                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
-                        socket.send(sendPacket);
+                        Connection.this.sendData(sendData, packet.getAddress());
                         
                     } else if (message.equals("DISCOVERY_RESPONSE") && !fromAddr.equals(localAddr)) {
                     	// Received discovery response
