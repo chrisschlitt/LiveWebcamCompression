@@ -57,6 +57,12 @@ public class Connection {
      * @throws Exception - If the connection failed due to a network issue
      */
     public boolean sendData(byte[] requestData) throws Exception{
+    	
+    	byte[] sendingData = new byte[1024];
+    	for(int i = 0; i < 1024; i++){
+    		sendingData[i] = requestData[i];
+    	}
+    	
     	// Check if the computer has connected to another computer
     	if(this.connectedComputerIP == null){
     		return false;
@@ -66,6 +72,10 @@ public class Connection {
         DatagramSocket socket;
         socket = new DatagramSocket();
         socket.setBroadcast(true);
+        // socket.setSendBufferSize(620000);
+
+    	System.out.println("Sending Data (SIZE=" + requestData.length + ")");
+    	System.out.println("Sending Data (MAX=" + socket.getSendBufferSize() + ")");
         
         // Create and send the packet to the connected computer
         DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, this.connectedComputerIP, this.port);
@@ -85,6 +95,8 @@ public class Connection {
      * @throws Exception - If the connection failed due to a network issue
      */
     public boolean sendData(byte[] requestData, InetAddress ip) throws Exception{
+    	System.out.println("Sending Custom Data to: " + ip);
+    	
         // Initiate the DatagramSocket
         DatagramSocket socket;
         socket = new DatagramSocket();
@@ -150,10 +162,12 @@ public class Connection {
                 
                 String localAddr = InetAddress.getLocalHost().toString().split("/")[1];
                 
+                
+                
                 // Continue listening
                 while(Connection.this.continueListening){
                     // Receive a packet
-                    byte[] received = new byte[350000];
+                    byte[] received = new byte[1000];
                     DatagramPacket packet = new DatagramPacket(received, received.length);
                     socket.receive(packet);
                     
@@ -165,6 +179,8 @@ public class Connection {
                     } catch (Exception e){
                     	fromAddr = packet.getAddress().getHostAddress().toString();
                     }
+                    
+                    System.out.println("Received Message From: " + fromAddr);
                     
                     // Route the message
                     if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
@@ -190,6 +206,7 @@ public class Connection {
                         System.out.println("Data: " + new String(packet.getData()));
                         
                         if(Connection.this.clientModel != null){
+                        	System.out.println("Calling receiveImage");
                         	Connection.this.clientModel.receiveImage(packet.getData());
                         }
                         
