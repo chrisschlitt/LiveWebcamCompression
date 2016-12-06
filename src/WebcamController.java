@@ -17,8 +17,9 @@ public class WebcamController {
 	private ClientView clientView;
 	private Webcam webcam;
 	private ServerModel serverModel;
+	private ClientModel clientModel;
 	
-	public WebcamController (MenuView menu, ServerView serverView, ClientView clientView, ServerModel serverModel, Webcam webcam) {
+	public WebcamController (MenuView menu, ServerView serverView, ClientView clientView, ServerModel serverModel, ClientModel clientModel, Webcam webcam) {
 		
 		this.webcam = webcam;
 		/*this.webcam = Webcam.getDefault();
@@ -27,6 +28,7 @@ public class WebcamController {
 		this.serverView = serverView;
 		this.clientView = clientView;
 		this.serverModel = serverModel;
+		this.clientModel = clientModel;
 		
 		menu.addClientListener(new ClientSelect());
 		menu.addServerListener(new ServerSelect());
@@ -50,7 +52,7 @@ public class WebcamController {
 			serverView.setVisible(true);
 			menu.setVisible(false);
 			serverView.addSelectionListener(new CompressionSelect());
-			
+			serverModel.setupConnection();
 			serverModel.getPicture(webcam);
 			
 		}
@@ -60,6 +62,12 @@ public class WebcamController {
 		public void actionPerformed(ActionEvent ev) {
 			clientView.setVisible(true);
 			menu.setVisible(false);
+			
+			try {
+				clientModel.setupConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}	
 	

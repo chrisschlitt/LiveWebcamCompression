@@ -12,8 +12,9 @@ public class ClientModel {
 	private static int numPictures=1;
 	private Connection connection = new Connection(this);
 	
-	public void setupConnection() {
+	public void setupConnection() throws Exception {
 		connection.beginListening();
+		connection.discoverIP();
 	}
 	
 	public void receiveImage(byte[] compressedImage) throws Exception {

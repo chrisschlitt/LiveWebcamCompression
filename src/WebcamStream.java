@@ -10,8 +10,9 @@ public class WebcamStream {
 		ServerView serverView = new ServerView(webcam);
 		ClientView clientView = new ClientView(webcam);
 		ServerModel serverModel = new ServerModel();
+		ClientModel clientModel = new ClientModel();
 		
-		WebcamController controller = new WebcamController(menu, serverView, clientView, serverModel, webcam);
+		WebcamController controller = new WebcamController(menu, serverView, clientView, serverModel, clientModel, webcam);
 		
 		
 	}
