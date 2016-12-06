@@ -74,7 +74,7 @@ public class Connection {
         socket.close();
         
         // Send size packet
-    	sendData = ("SIZE$" + requestData.length + "$").getBytes();
+    	sendData = ("SIZE:" + requestData.length).getBytes();
     	socket = new DatagramSocket();
         socket.setBroadcast(true);
         requestPacket = new DatagramPacket(sendData, sendData.length, this.connectedComputerIP, this.port);
@@ -231,13 +231,11 @@ public class Connection {
                     	this.receivedImageIndex = 0;
                     } else if(message.startsWith("SIZE")){
                     	System.out.println("Received Size Packet (" + message + ")");
-                    	String[] messageComponents = message.split("$");
-                    	System.out.println("There are " + messageComponents.length + " parts");
-                    	for(int p = 0; p < messageComponents.length; p++){
-                    		System.out.println(messageComponents[p]);
-                    	}
-                    	System.out.println("Size: " + messageComponents[1]);
-                    	this.receivedImage = new byte[Integer.parseInt(messageComponents[1])];
+                    	
+                    	String messageComponents = message.substring(message.indexOf(':')+1, message.length());
+
+                    	System.out.println("Size: " + messageComponents);
+                    	this.receivedImage = new byte[Integer.parseInt(messageComponents)];
                     } else if(message.equals("END_PACKET")){
                     	System.out.println("Received End Packet");
                     	Connection.this.clientModel.receiveImage(this.receivedImage);
