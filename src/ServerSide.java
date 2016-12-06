@@ -14,6 +14,21 @@ public class ServerSide {
         Connection connection = new Connection();
         // Begin listening
         connection.beginListening();
+        
+        // Wait until the client has connected
+        System.out.println("Waiting for client connection...");
+        while(!connection.isConnected()){
+        	// Wait
+        }
+        System.out.println("Connected to Client");
+        
+        // Send a test Message
+        byte[] request = "TEST_MESSAGE_FROM_SERVER".getBytes();
+        if(connection.sendData(request)){
+            System.out.println("Sent message successfully");
+        } else {
+        	System.out.println("Error Sending Message");
+        }
     }
     
 }

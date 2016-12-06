@@ -34,6 +34,11 @@ public class Connection {
      * @throws Exception - If the connection failed due to a network issue
      */
     public boolean sendData(byte[] requestData) throws Exception{
+    	// Check if the computer has connected to another computer
+    	if(this.connectedComputerIP == null){
+    		return false;
+    	}
+    	
         // Initiate the DatagramSocket
         DatagramSocket socket;
         socket = new DatagramSocket();
@@ -77,6 +82,19 @@ public class Connection {
      */
     public InetAddress getServerIP(){
         return this.connectedComputerIP;
+    }
+    
+    /**
+     * A method to check if the computer has connected to another computer
+     * 
+     * @return result: boolean - An indicator if the computer has been connected to another computer
+     */
+    public boolean isConnected(){
+    	if(this.connectedComputerIP != null){
+    		return true;
+    	} else {
+    		return false;
+    	}
     }
     
     /**

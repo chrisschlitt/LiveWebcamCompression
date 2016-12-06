@@ -21,9 +21,11 @@ public class ClientSide {
         System.out.println("Found the server at IP Address: " + connection.getServerIP());
         
         // Send a test Message
-        byte[] request = "TEST_MESSAGE".getBytes();
+        byte[] request = "TEST_MESSAGE_FROM_CLIENT".getBytes();
         if(connection.sendData(request)){
             System.out.println("Sent message successfully");
+        } else {
+        	System.out.println("Error Sending Message");
         }
         
     }
