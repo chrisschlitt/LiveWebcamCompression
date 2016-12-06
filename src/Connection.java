@@ -81,12 +81,16 @@ public class Connection {
         socket.send(requestPacket);
         socket.close();
     	
-    	
-    	byte[] sendingData;
+    	byte[] sendingData = new byte[1024];
     	int b = 0;
     	while(b < requestData.length){
-    		sendingData = new byte[1024];
-    		for(int i = 0; i < 1024; i++){
+    		if((requestData.length - b) >= 1024){
+    			sendingData = new byte[1024];
+    		} else {
+    			sendingData = new byte[requestData.length - b];
+    		}
+    		
+    		for(int i = 0; i < sendingData.length; i++){
     			sendingData[i] = requestData[b];
     			b++;
     			if(b >= requestData.length){
@@ -97,9 +101,12 @@ public class Connection {
             socket.setBroadcast(true);
             requestPacket = new DatagramPacket(sendingData, sendingData.length, this.connectedComputerIP, this.port);
             socket.send(requestPacket);
+            socket.send(requestPacket);
             socket.close();
     	}
-    	
+
+    	System.out.println("Last Byte Sent: " + sendingData[sendingData.length-1]);
+    	System.out.println("Last Byte Sent: " + requestData[requestData.length-1]);
     	
     	// Send end packet
     	sendData = "END_PACKET".getBytes();
@@ -242,10 +249,24 @@ public class Connection {
                     } else if(!fromAddr.equals(localAddr)) {
                     	System.out.println("Received Portion Packet");
                     	byte[] receivedPortion = packet.getData();
-                    	for(int i = 0; i < receivedPortion.length; i++){
-                    		this.receivedImage[this.receivedImageIndex] = receivedPortion[i];
-                    		this.receivedImageIndex++;
+                    	int n = 1;
+                    	boolean newPacket = false;
+                    	while(n < 26){
+                    		if(this.receivedImage[this.receivedImage.length - n] != receivedPortion[receivedPortion.length - n]){
+                    			newPacket = true;
+                    			break;
+                    		}
+                    		n++;
                     	}
+                    	if(newPacket){
+                    		
+                    		for(int i = 0; i < receivedPortion.length; i++){
+                        		this.receivedImage[this.receivedImageIndex] = receivedPortion[i];
+                        		this.receivedImageIndex++;
+                        	}
+                    		
+                    	}
+                    	
                         
                     }
                     
