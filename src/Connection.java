@@ -136,6 +136,8 @@ public class Connection {
                 socket = new DatagramSocket(Connection.this.port, InetAddress.getByName("0.0.0.0"));
                 socket.setBroadcast(true);
                 
+                String localAddr = InetAddress.getLocalHost().toString().split("/")[1];
+                
                 // Continue listening
                 while(Connection.this.continueListening){
                     // Receive a packet
@@ -145,8 +147,10 @@ public class Connection {
                     
                     String message = new String(packet.getData()).trim();
                     
+                    String fromAddr = packet.getAddress().getHostAddress().toString().split("/")[1];
+                    
                     // Route the message
-                    if(message.equals("DISCOVERY")){
+                    if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
                     	// Received discovery message
                         // For testing purposes
                         System.out.println("Discovery packet received from: " + packet.getAddress().getHostAddress());
@@ -161,16 +165,15 @@ public class Connection {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
                         socket.send(sendPacket);
                         
-                    } else if (message.equals("DISCOVERY_RESPONSE")) {
+                    } else if (message.equals("DISCOVERY_RESPONSE") && !fromAddr.equals(localAddr)) {
                     	// Received discovery response
                         // Set the server IP
                         Connection.this.connectedComputerIP = packet.getAddress();
-                    } else {
+                    } else if(!fromAddr.equals(localAddr)) {
                     	// Received other response
                         // Place wrapper functions here
                         System.out.println("Data Received From: " + packet.getAddress().getHostAddress());
                         System.out.println("Data: " + new String(packet.getData()));
-                        
                     }
                     
                 }
@@ -222,7 +225,7 @@ public class Connection {
         
         // Get the local IP address
         InetAddress tempAddr;
-        InetAddress localAddr = InetAddress.getLocalHost();
+        String localAddr = InetAddress.getLocalHost().toString().split("/")[1];
         String[] ipAddress = InetAddress.getLocalHost().toString().split("/")[1].split("\\.");
         
         // Loop through all IP addresses on the local subnet, then try +/- subnets
@@ -232,23 +235,25 @@ public class Connection {
         	int add = 0;
         	if(ipthree > 255){
         		ipthree = ipthree - 255;
-        		add = -1;
+        		add = 1;
         	}
         	if(ipthree < 0){
         		ipthree = ipthree + 255;
-        		add = 1;
+        		add = -1;
         	}
         	
         	// Loop through the local subnet
         	for(int j=0; j<255; j++){
 	            // Check addresses on specified subnet
 	            tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
+
 	            // Check if sending message to own IP address and filter out
-	            if(tempAddr.equals(localAddr)){
+	            if(localAddr.trim().equals((ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j).trim())){
 	            	continue;
 	            }
 	            requestPacket = new DatagramPacket(request, request.length, tempAddr, this.port);
 	            socket.send(requestPacket);
+	            
 	            if(this.connectedComputerIP != null){
 	            	// If the server has been found, break the loop
 	        		break;

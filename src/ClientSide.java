@@ -20,14 +20,18 @@ public class ClientSide {
         connection.discoverIP();
         
         // Print the IP Address of the server
-        System.out.println("Found the server at IP Address: " + connection.getServerIP());
-        
-        // Send a test Message
-        byte[] request = "TEST_MESSAGE_FROM_CLIENT".getBytes();
-        if(connection.sendData(request)){
-            System.out.println("Sent message successfully");
+        if(connection.getServerIP() != null){
+        	System.out.println("Found the server at IP Address: " + connection.getServerIP());
+        	
+        	// Send a test Message
+            byte[] request = "TEST_MESSAGE_FROM_CLIENT".getBytes();
+            if(connection.sendData(request)){
+                System.out.println("Sent message successfully");
+            } else {
+            	System.out.println("Error Sending Message");
+            }
         } else {
-        	System.out.println("Error Sending Message");
+        	System.out.println("Could not find the server");
         }
         
     }
