@@ -222,6 +222,7 @@ public class Connection {
         
         // Get the local IP address
         InetAddress tempAddr;
+        InetAddress localAddr = InetAddress.getLocalHost();
         String[] ipAddress = InetAddress.getLocalHost().toString().split("/")[1].split("\\.");
         
         // Loop through all IP addresses on the local subnet, then try +/- subnets
@@ -243,7 +244,7 @@ public class Connection {
 	            // Check addresses on specified subnet
 	            tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
 	            // Check if sending message to own IP address and filter out
-	            if(tempAddr.equals(ipAddress)){
+	            if(tempAddr.equals(localAddr)){
 	            	continue;
 	            }
 	            requestPacket = new DatagramPacket(request, request.length, tempAddr, this.port);
