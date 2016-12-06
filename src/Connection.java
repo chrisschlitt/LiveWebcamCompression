@@ -17,16 +17,27 @@ public class Connection {
     private boolean continueListening;
     // The specified port to send/receive packets from
     private int port;
+    // Receiving Model
+    private ClientModel receivingModel;
     
     /**
      * Constructor
      * 
      * @param port: int - The port to send/receive packets from
      */
-    public Connection(int port){
+    public Connection(int port, ClientModel receivingModel){
         this.connectedComputerIP = null;
         this.continueListening = false;
         this.port = port;
+        this.receivingModel = receivingModel;
+    }
+    
+    /**
+     * Constructor without a port
+     * 
+     */
+    public Connection(ClientModel receivingModel){
+    	this(8888, receivingModel);
     }
     
     /**
@@ -34,7 +45,8 @@ public class Connection {
      * 
      */
     public Connection(){
-    	this(8888);
+    	this(8888, new ReceivingModel());
+        this.receivingModel = receivingModel;
     }
     
     /**
@@ -179,6 +191,14 @@ public class Connection {
                         // Place wrapper functions here
                         System.out.println("Data Received From: " + packet.getAddress().getHostAddress());
                         System.out.println("Data: " + new String(packet.getData()));
+                        
+                        if(this.receivingModel != null){
+                        	Connection.this.receivingModel.receiveImage(packet.getData());
+                        }
+                        
+                        
+                        
+                        
                     }
                     
                 }
@@ -253,8 +273,6 @@ public class Connection {
 	            // Check addresses on specified subnet
 	            tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
 
-	            // System.out.println("Sending packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
-	            
 	            // Check if sending message to own IP address and filter out
 	            if(localAddr.trim().equals((ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j).trim())){
 	            	continue;

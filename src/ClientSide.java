@@ -17,7 +17,14 @@ public class ClientSide {
         // Begin listening
         connection.beginListening();
         // Discover the server
+        System.out.println("Looking for server...");
         connection.discoverIP();
+        
+        while(!connection.isConnected()){
+        	// Wait
+        }
+        
+        System.out.println("Finished trying to connect");
         
         // Print the IP Address of the server
         if(connection.getServerIP() != null){
