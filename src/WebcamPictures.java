@@ -38,7 +38,7 @@ public class WebcamPictures {
 		mainMenu.add(top, BorderLayout.NORTH);
 		mainMenu.add(buttonPanel, BorderLayout.SOUTH);
 		frame.add(mainMenu, BorderLayout.CENTER);
-		frame.setResizable(true);
+		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		//frame.pack();
 		frame.setSize(640, 557);
@@ -62,7 +62,7 @@ public class WebcamPictures {
 				try {
 					ImageIO.write(image, "PNG", new File("test"+numPictures+".png"));
 					int[] imageColors = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
-										
+					System.out.println(imageColors.length);
 					int count = 0; 
 					int x = 0;
 					int y = 0;
@@ -118,6 +118,14 @@ public class WebcamPictures {
 			}
 		}
 		
+		class CompressionSelect implements ActionListener {
+			public void actionPerformed(ActionEvent ev) {
+				JRadioButton actedOn = (JRadioButton) ev.getSource();
+				System.out.println(actedOn.getText());
+			}
+		}
+		
+		
 		class serverSelect implements ActionListener {
 			public void actionPerformed(ActionEvent ev) {
 				
@@ -129,17 +137,52 @@ public class WebcamPictures {
 				panel.setMirrored(true);
 				
 				JPanel buttonPanel = new JPanel();
+				buttonPanel.setLayout(new BorderLayout());
+				
 				JLabel label = new JLabel("Sending Video", JLabel.CENTER);
-				JButton takePictureButton = new JButton("Take Picture");
-				takePictureButton.addActionListener(new TakePicture());
-				buttonPanel.add(takePictureButton, BorderLayout.SOUTH);
+				
+				JRadioButton noCompressionButton = new JRadioButton("None");
+				JRadioButton quarterCompressionButton = new JRadioButton("1/4");
+				JRadioButton halfCompressionButton = new JRadioButton("1/2");
+				
+				ButtonGroup buttonGroup = new ButtonGroup();
+				
+				
+				buttonGroup.add(halfCompressionButton);
+				buttonGroup.add(quarterCompressionButton);
+				buttonGroup.add(noCompressionButton);
+				JPanel radioPanel = new JPanel();
+				radioPanel.setLayout(new BorderLayout());
+				
+				JPanel buttons = new JPanel();
+				buttons.add(halfCompressionButton);
+				buttons.add(quarterCompressionButton);
+				buttons.add(noCompressionButton);
+				halfCompressionButton.setSelected(true);
+				radioPanel.add(buttons);
+				
+				halfCompressionButton.addActionListener(new CompressionSelect());
+				quarterCompressionButton.addActionListener(new CompressionSelect());
+				noCompressionButton.addActionListener(new CompressionSelect());
+
+				
+				JLabel buttonLabel = new JLabel("Compression Level", JLabel.CENTER);
+				buttonPanel.add(buttonLabel, BorderLayout.NORTH);
+				buttonPanel.add(radioPanel, BorderLayout.CENTER);
+				
 				frame.add(buttonPanel, BorderLayout.SOUTH);
 				frame.add(panel, BorderLayout.CENTER);
 				frame.add(label, BorderLayout.NORTH);
-				frame.setResizable(true);
+				frame.setResizable(false);
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.pack();
 				frame.setVisible(true);
+				
+				try {
+					broadCastVideo(webcam);
+				} catch (IOException e){
+					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -156,7 +199,7 @@ public class WebcamPictures {
 				JLabel label = new JLabel("Receiving Video", JLabel.CENTER);
 				frame.add(label, BorderLayout.NORTH);
 				frame.add(panel, BorderLayout.SOUTH);
-				frame.setResizable(true);
+				frame.setResizable(false);
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.pack();
 				frame.setVisible(true);
@@ -165,6 +208,16 @@ public class WebcamPictures {
 		}
 		serverButton.addActionListener(new serverSelect());
 		clientButton.addActionListener(new clientSelect());
+		
+		
+		
+	}
+	
+	public static void broadCastVideo(Webcam cam) throws IOException{
+		
+		BufferedImage image = cam.getImage();
+		ImageIO.write(image, "PNG", new File("test1.png"));
+		
 		
 	}
 }
