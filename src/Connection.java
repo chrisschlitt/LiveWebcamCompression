@@ -232,6 +232,10 @@ public class Connection {
                     } else if(message.startsWith("SIZE")){
                     	System.out.println("Received Size Packet (" + message + ")");
                     	String[] messageComponents = message.split("$");
+                    	System.out.println("There are " + messageComponents.length + " parts");
+                    	for(int p = 0; p < messageComponents.length; p++){
+                    		System.out.println(messageComponents[p]);
+                    	}
                     	System.out.println("Size: " + messageComponents[1]);
                     	this.receivedImage = new byte[Integer.parseInt(messageComponents[1])];
                     } else if(message.equals("END_PACKET")){
