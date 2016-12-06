@@ -57,12 +57,24 @@ public class Connection {
      * @throws Exception - If the connection failed due to a network issue
      */
     public boolean sendData(byte[] requestData) throws Exception{
+    	
+    	System.out.println("Total Size: " + requestData.length);
+    	
+    	
     	// Initiate the DatagramSocket and DatagramPacket
         DatagramSocket socket;
         DatagramPacket requestPacket;
     	
     	// Send start packet
     	byte[] sendData = "START_PACKET".getBytes();
+    	socket = new DatagramSocket();
+        socket.setBroadcast(true);
+        requestPacket = new DatagramPacket(sendData, sendData.length, this.connectedComputerIP, this.port);
+        socket.send(requestPacket);
+        socket.close();
+        
+        // Send size packet
+    	sendData = ("SIZE|" + requestData.length + "|").getBytes();
     	socket = new DatagramSocket();
         socket.setBroadcast(true);
         requestPacket = new DatagramPacket(sendData, sendData.length, this.connectedComputerIP, this.port);
@@ -216,8 +228,12 @@ public class Connection {
                         Connection.this.connectedComputerIP = packet.getAddress();
                     } else if(message.equals("START_PACKET")){
                     	System.out.println("Received Start Packet");
-                    	this.receivedImage = new byte[1000000];
                     	this.receivedImageIndex = 0;
+                    } else if(message.startsWith("SIZE")){
+                    	System.out.println("Received Size Packet");
+                    	String[] messageComponents = message.split("|");
+                    	System.out.println("Size: " + messageComponents[1]);
+                    	this.receivedImage = new byte[Integer.parseInt(messageComponents[1])];
                     } else if(message.equals("END_PACKET")){
                     	System.out.println("Received End Packet");
                     	Connection.this.clientModel.receiveImage(this.receivedImage);
