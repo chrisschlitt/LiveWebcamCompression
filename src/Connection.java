@@ -78,6 +78,8 @@ public class Connection {
      *
      */
     public class DiscoveryThread implements Runnable {
+    	boolean receivedDiscovery = false;
+    	
         /**
          * The run method
          */
@@ -113,7 +115,8 @@ public class Connection {
                     // System.out.println("Received Packet: " + message);
                     // Route the message
                     if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
-                    	if(Connection.this.connectedComputerIP != null){
+                    	if(!receivedDiscovery){
+                    		receivedDiscovery = true;
                     		System.out.println("Connected to Client");
                             // Received discovery message
                             // Set the client IP
@@ -125,7 +128,8 @@ public class Connection {
                             Connection.this.sendPacketData(sendData, packet.getAddress());
                     	}
                     } else if (message.equals("DISCOVERY_RESPONSE") && !fromAddr.equals(localAddr)) {
-                    	if(Connection.this.continueListening){
+                    	if(!receivedDiscovery){
+                    		receivedDiscovery = true;
                     		// Stop packet listening
                     		Connection.this.continueListening = false;
                     		System.out.println("Connected to Server");
@@ -137,11 +141,9 @@ public class Connection {
                     	}
                     	
                     } else if (message.equals("STREAMREADY")) {
-                    	if(Connection.this.continueListening){
-                    		// Received stream ready response
-                            // Stop packet listening
-                            Connection.this.continueListening = false;
-                    	}
+                		// Received stream ready response
+                        // Stop packet listening
+                        Connection.this.continueListening = false;
                     }
                     
                     // Close the socket
