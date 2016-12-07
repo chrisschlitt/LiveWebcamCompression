@@ -26,7 +26,7 @@ public class ServerModel implements Model {
     public void setupConnection() {
     	
     	connection = new Connection(8888, 4555, 6987, this);
-        connection.connectToServer();
+        connection.connectToClient();
     }
     
     public void setCompression(int compression) {

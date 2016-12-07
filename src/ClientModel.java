@@ -28,7 +28,7 @@ public class ClientModel implements Model {
      */
     public void setupConnection() throws Exception {
     	connection = new Connection(8888, 6987, 4555, this);
-        connection.connectToClient();
+        connection.connectToServer();
     }
     
     public void setDoneStreaming(boolean doneStreaming) {

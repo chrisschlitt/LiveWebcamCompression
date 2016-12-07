@@ -20,14 +20,20 @@ import java.net.UnknownHostException;
 public class Connection {
     // The IP address of the other computer you are connecting to
     private InetAddress connectedComputerIP;
-    // The port used
-    private int port;
+    // The packet/discovery port
+    private int packetPort;
+    // The incoming port
+    private int incomingPort;
+    // The outgoing port
+    private int outgoingPort;
     // The output stream
     private ObjectOutputStream outputStream;
     // A flag to continue listening for packets
     public boolean continueListening;
     // A flag to start streaming
     public boolean startStreaming;
+    // A flag to start streaming
+    public boolean continueStreaming;
     // Discovery Thread
     public Thread discoveryThread;
     // Receiving Thread
@@ -35,7 +41,9 @@ public class Connection {
     // Output Socket
     public Socket streamingSocket;
     // The receiving model for callbacks
-    public ClientModel receivingModel;
+    public Model receivingModel;
+    // Server indicator
+    public boolean isServer;
     
     /**
      * Constructor
@@ -43,12 +51,56 @@ public class Connection {
      * @param port: int - The port to send the discovery packets
      * @param receivingModel: ClientModel - The ClientModel that will be receiving the images (null for sender)
      */
-    public Connection(int port, ClientModel receivingModel){
+    public Connection(int packetPort, int incomingPort, int outgoingPort, Model receivingModel){
     	System.out.println("Initializing Connection");
-        // Set the port
-        this.port = port;
+        // Set the ports
+    	this.packetPort = packetPort;
+        this.incomingPort = incomingPort;
+        this.outgoingPort = outgoingPort;
         // Set the receiving model
         this.receivingModel = receivingModel;
+    }
+    
+    /**
+     * A method to handle the connection to the server
+     */
+    public void connectToClient(){
+    	this.isServer = true;
+    	// Begin listening for packets
+        this.beginPacketListening();
+        // Wait until the client connects
+        try {
+            this.discoveryThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Stream setup successfully");
+
+    }
+    
+    /**
+     * A method to handle connection to the client
+     */
+    public void connectToServer(){
+    	this.isServer = false;
+    	// Begin listening for packets
+        this.beginPacketListening();
+        // Discover the server's IP address
+        try {
+			this.discoverIP();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        // System.out.println("Finished discovering (" + this.continueListening + ")");
+        // Wait until the server is discovered
+        try {
+			this.discoveryThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        System.out.println("Stream setup successfully");
+
     }
     
     /**
@@ -80,6 +132,7 @@ public class Connection {
      */
     public class DiscoveryThread implements Runnable {
     	boolean receivedDiscovery = false;
+    	boolean receivedStream = false;
     	
         /**
          * The run method
@@ -94,16 +147,19 @@ public class Connection {
                 
                 // Continue listening
                 while(Connection.this.continueListening){
-                	// System.out.println("Ready to receive a packet");
+                	// System.out.println("Ready to begin receiving a packet");
                     // Listen on specified port
-                    socket = new DatagramSocket(Connection.this.port, InetAddress.getByName("0.0.0.0"));
+                    socket = new DatagramSocket(Connection.this.packetPort, InetAddress.getByName("0.0.0.0"));
                     socket.setBroadcast(true);
+                    
+                    // System.out.println("Ready to receive another packet");
                     
                     // Receive a packet
                     byte[] received = new byte[1000];
                     DatagramPacket packet = new DatagramPacket(received, received.length);
+                    // System.out.println("Receive Packet? (" + System.currentTimeMillis() + ")");
                     socket.receive(packet);
-                    
+                    // System.out.println("Packet received");
                     // Get package message
                     String message = new String(packet.getData()).trim();
                     // Get package address
@@ -131,8 +187,6 @@ public class Connection {
                     } else if (message.equals("DISCOVERY_RESPONSE") && !fromAddr.equals(localAddr)) {
                     	if(!receivedDiscovery){
                     		receivedDiscovery = true;
-                    		// Stop packet listening
-                    		Connection.this.continueListening = false;
                     		System.out.println("Connected to Server");
                             // Received discovery response
                             // Set the connected computer (client) IP
@@ -142,15 +196,24 @@ public class Connection {
                     	}
                     	
                     } else if (message.equals("STREAMREADY")) {
-                		// Received stream ready response
-                        // Stop packet listening
-                        Connection.this.continueListening = false;
+                    	if(!receivedStream){
+                    		receivedStream = true;
+                    		if(Connection.this.isServer){
+                    			// Prepare the receiving stream
+                                Connection.this.beginListeningForStream();
+                    		}
+                    		// System.out.println("Passed");
+	                		// Received stream ready response
+	                        // Stop packet listening
+	                        Connection.this.continueListening = false;
+	                        Connection.this.beginStreaming();
+                    	}
                     }
                     
                     // Close the socket
                     socket.close();
                 }
-                
+                // System.out.println("No more listening");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -186,12 +249,14 @@ public class Connection {
             socket.setBroadcast(true);
             
             // Create and send the packet
-            DatagramPacket requestPacket = new DatagramPacket(data, data.length, address, this.port);
-            socket.send(requestPacket);
-            // Send second packet to ensure delivery
-            socket.send(requestPacket);
-            // Send third packet to ensure delivery
-            socket.send(requestPacket);
+            DatagramPacket requestPacket = new DatagramPacket(data, data.length, address, this.packetPort);
+            // System.out.println("Sending packet (" + System.currentTimeMillis() + "): " + data);
+            try{
+            	socket.send(requestPacket);
+            } catch (Exception e){
+            	e.printStackTrace();
+            }
+            
             
             // Close the socket
             socket.close();
@@ -250,7 +315,7 @@ public class Connection {
                     if(localAddr.trim().equals((ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j).trim())){
                         continue;
                     }
-                    requestPacket = new DatagramPacket(request, request.length, tempAddr, Connection.this.port);
+                    requestPacket = new DatagramPacket(request, request.length, tempAddr, Connection.this.packetPort);
                     // System.out.println("Sending a discovery packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
                     
                     // Send the packet
@@ -311,8 +376,8 @@ public class Connection {
     	int numThreads = 4;
     	int threadNumber = 0;
     	Thread discoverThreads[] = new Thread[numThreads];
-
-    	while((threadNumber <= numThreads) && (this.connectedComputerIP == null)){
+    	// System.out.println("Beginning discovery");
+    	while((threadNumber < numThreads) && (this.connectedComputerIP == null)){
 			discoverThreads[threadNumber] = new Thread(new DiscoverThread());
 			discoverThreads[threadNumber].start();
 			Thread.sleep(1000);
@@ -320,12 +385,81 @@ public class Connection {
     	}
     	threadNumber--;
     	while(threadNumber >= 0){
-    		System.out.println("Waiting to join");
+    		// System.out.println("Waiting to join");
     		discoverThreads[threadNumber].join();
-    		System.out.println("Joined");
+    		// System.out.println("Joined");
     		threadNumber--;
     	}
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     /**
      * A Runnable class to handle listening for the data stream
@@ -341,7 +475,7 @@ public class Connection {
         // IncomingSocket
         private Socket incomingSocket;
         // Receiving Model
-        private ClientModel receivingModel;
+        private Model receivingModel;
         
         /**
          * A method to prepare the receiving connection
@@ -351,15 +485,25 @@ public class Connection {
         public boolean prepareReceivingConnection() throws IOException{
         	// System.out.println("Preparing to receive stream");
             // Create the socket
-            this.serverSocket = new ServerSocket(4445);
+        	try{
+        		this.serverSocket = new ServerSocket(Connection.this.incomingPort);
+        	} catch(Exception e){
+        		
+        		e.printStackTrace();
+        		
+        	}
+        	// System.out.println("Here");
             // Send the stream ready packet to the server
             byte[] data = "STREAMREADY".getBytes();
+            // System.out.println("Sending: " + data);
             Connection.this.sendPacketData(data, Connection.this.connectedComputerIP);
+            // System.out.println("Here1");
             // Accept the incoming stream (break until accepted)
             this.incomingSocket = this.serverSocket.accept();
+            // System.out.println("Here2");
             // Create the input stream
             this.inputStream = new ObjectInputStream(this.incomingSocket.getInputStream());
-            
+            // System.out.println("Finished preparing to receive stream");
             return true;
         }
         
@@ -367,8 +511,8 @@ public class Connection {
          * A method to set the receiving model for the thread
          * @param receivingModel: ClientModel - ClientModel with receiveImage method
          */
-        public ListeningThread(ClientModel receivingModel){
-            this.receivingModel = receivingModel;
+        public ListeningThread(Model receivingModel2){
+            this.receivingModel = receivingModel2;
         }
         
         
@@ -382,13 +526,17 @@ public class Connection {
             try {
                 // Prepare to receive the stream
                 this.prepareReceivingConnection();
+
+                Connection.this.continueStreaming = true;
                 // While the stream is open
-                System.out.println("Ready to receive strem");
-                while(Connection.this.startStreaming){
+                // System.out.println("Ready to receive strem");
+                while(Connection.this.continueStreaming){
                 	// System.out.println("Ready to receive stream object");
                     // Receive the image
                     this.receivingModel.receiveImage((byte[])this.inputStream.readObject());
+
                 }
+                System.out.println("Stopped Streaming");
             } catch(Exception e){
                 e.getStackTrace();
             }
@@ -399,8 +547,10 @@ public class Connection {
      * A method to prepare to receive a stream
      */
     public void beginListeningForStream() throws IOException{
+    	System.out.println("Initializing incoming stream");
+    	this.continueListening = true;
         // Set the start streaming flag
-        this.startStreaming = true;
+        // this.startStreaming = true;
         // Create the listening thread
         this.listeningThread = new Thread(new ListeningThread(this.receivingModel));
         // Start the listening thread
@@ -414,7 +564,7 @@ public class Connection {
     public void beginStreaming(){
         // Open the socket to the client
         try {
-            this.streamingSocket = new Socket(this.connectedComputerIP, 4445);
+            this.streamingSocket = new Socket(this.connectedComputerIP, this.outgoingPort);
         } catch (IOException e) {
             e.printStackTrace();
         }
