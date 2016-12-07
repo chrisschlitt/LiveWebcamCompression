@@ -211,9 +211,6 @@ public class Connection {
         int ipthree = Integer.parseInt(ipAddress[2]);
         int ii = 1;
         
-        // Create the socket
-        socket = new DatagramSocket();
-        socket.setBroadcast(true);
         // System.out.println("Beginning discovery");
         while(ii < 255){
             // Correct the IP address
@@ -226,6 +223,10 @@ public class Connection {
                 ipthree = ipthree + 255;
                 add = -1;
             }
+            
+            // Create the socket
+            socket = new DatagramSocket();
+            socket.setBroadcast(true);
             
             // Loop through the local subnet
             for(int j=0; j<255; j++){
@@ -247,6 +248,8 @@ public class Connection {
                     break;
                 }
             }
+         // Close the socket
+            socket.close();
             
             // Restore ipthree counter for math
             ipthree = ipthree + (255 * add);
@@ -264,8 +267,7 @@ public class Connection {
                 break;
             }
         }
-        // Close the socket
-        socket.close();
+        
     }
     
     /**
