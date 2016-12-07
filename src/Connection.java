@@ -7,6 +7,15 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * Connection
+ *
+ * A class to handle discovery and streaming of data
+ * between a client and a server
+ *
+ * @author christopherschlitt
+ *
+ */
 public class Connection {
     // The IP address of the other computer you are connecting to
     private InetAddress connectedComputerIP;
