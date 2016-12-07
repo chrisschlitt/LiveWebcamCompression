@@ -186,13 +186,9 @@ public class Connection {
         // Create and send the packet
         DatagramPacket requestPacket = new DatagramPacket(data, data.length, address, this.port);
         socket.send(requestPacket);
-        try {
-			Thread.sleep(10);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         // Send second packet to ensure delivery
+        socket.send(requestPacket);
+        // Send third packet to ensure delivery
         socket.send(requestPacket);
         
         // Close the socket
