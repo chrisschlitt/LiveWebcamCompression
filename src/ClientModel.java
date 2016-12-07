@@ -12,6 +12,7 @@ public class ClientModel {
 	private static int numPictures=1;
     // The connection to the server
     private Connection connection;
+    private ClientView clientView;
     
     /**
      * A method to setup the client server
@@ -32,8 +33,7 @@ public class ClientModel {
      * 
      * @param compressedImage: byte[] - Received image
      */
-	public void receiveImage(byte[] compressedImage) throws Exception {
-		
+	public void receiveImage(byte[] compressedImage) throws Exception {	
 		int count;
 		int x;
 		int y;
@@ -57,12 +57,12 @@ public class ClientModel {
 			x++;
 			count++;
 		}
-		
-		ImageIO.write(reconstructed, "PNG", new File("reconstructed"+numPictures+".png"));
+		this.clientView.displayImage(reconstructed);
 		numPictures++;
-		
-		
 	}
 	
+	public void setClientView(ClientView clientView) {
+		this.clientView=clientView;
+	}
 	
 }
