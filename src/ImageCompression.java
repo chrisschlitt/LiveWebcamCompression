@@ -101,7 +101,7 @@ public class ImageCompression {
 	 */
 	private byte[] setupDataForCompression(double[] compressedImage, double theta, int ratio) {
 		
-		int[] compressedImageInt = new int[compressedImage.length + 4];
+		 int[] compressedImageInt = new int[compressedImage.length + 4];
 		for (int i = 0; i<compressedImage.length; i ++ ) {
 			compressedImageInt[i] = (int)compressedImage[i];
 		}

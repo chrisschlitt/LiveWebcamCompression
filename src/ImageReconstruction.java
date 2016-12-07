@@ -35,7 +35,7 @@ public class ImageReconstruction {
 	
 			 double [][] expandedImageTmp = reshape(expandedImageMatrix.getArray(), width, height);
 		 
-			 double[][] expandedImage = rephaseImage(expandedImageTmp);		 
+			  double[][] expandedImage = rephaseImage(expandedImageTmp);		 
 		 
 			 reconstructedImage = convertDoubletoInt(expandedImage);
 		 	}
