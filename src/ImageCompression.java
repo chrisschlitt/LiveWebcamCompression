@@ -67,9 +67,10 @@ public class ImageCompression {
 			//Converting original image from int to double
 			for(int i = 0; i < image.length; i++)
 		    {
-		        for(int j = 0; j < image[0].length; j++)
+		        for(int j = 0; j < image[0].length; j++) {
 		    		uncompressedImage[k] = (double) image[i][j];
 		        	k++;
+		        }
 		    }
 			
 			compressedImageBytes =  setupDataForCompression(uncompressedImage, 0, ratio);

@@ -12,7 +12,6 @@ public class WebcamStream {
 		ServerModel serverModel = new ServerModel();
 		ClientModel clientModel = new ClientModel();
 		clientModel.setClientView(clientView);
-		
 		WebcamController controller = new WebcamController(menu, serverView, clientView, serverModel, clientModel, webcam);
 		
 		
