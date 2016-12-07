@@ -14,19 +14,24 @@ public class ImageCompression {
 	 * Constructor takes the original image and compresses it
 	 * @param image
 	 */
-	public ImageCompression(int[][] image) {
+	public ImageCompression(int[][] image, int ratio) {
 		originalImage = new double[image.length][image[0].length];
 		
-		//Converting original image from int to double
-		for(int i = 0; i < image.length; i++)
-	    {
-	        for(int j = 0; j < image[0].length; j++)
-	    		originalImage[i][j] = (double) image[i][j];
-		}		
+		
 		
 		width = image[0].length;
 		height = image.length;
 		int totalSize = image.length*image[0].length;
+		
+		if (ratio != 1)
+		{
+			//Converting original image from int to double
+			for(int i = 0; i < image.length; i++)
+		    {
+		        for(int j = 0; j < image[0].length; j++)
+		    		originalImage[i][j] = (double) image[i][j];
+			}
+			
 		// resize matrix into two rows
 		double[][] resizeMatrix = new double[2][totalSize/2];
 		resizeMatrix = reshape(originalImage, 2, totalSize/2 );
@@ -52,9 +57,23 @@ public class ImageCompression {
 		Matrix compressedImageMatrix = rotationMatrix.times(resizeMatrixZ);
 		double imgTmp[][] = compressedImageMatrix.getArray();
 		compressedImage = imgTmp[0];
-		 
-		compressedImageBytes =  setupDataForCompression(compressedImage, theta);
 		
+		 
+		compressedImageBytes =  setupDataForCompression(compressedImage, theta, ratio);
+		}
+		else {
+			int k = 0;
+			double uncompressedImage[] = new uncompressedImage[totalSize];
+			//Converting original image from int to double
+			for(int i = 0; i < image.length; i++)
+		    {
+		        for(int j = 0; j < image[0].length; j++)
+		    		uncompressedImage[k] = (double) image[i][j];
+		        	k++;
+		    }
+			
+			compressedImageBytes =  setupDataForCompression(originalImage, 0, ratio);
+		}
 	}
 
 	/**
@@ -80,16 +99,16 @@ public class ImageCompression {
 	 * @param theta
 	 * @return int array for compression
 	 */
-	private byte[] setupDataForCompression(double[] compressedImage, double theta) {
+	private byte[] setupDataForCompression(double[] compressedImage, double theta, int ratio) {
 		
-		int[] compressedImageInt = new int[compressedImage.length + 3];
+		int[] compressedImageInt = new int[compressedImage.length + 4];
 		for (int i = 0; i<compressedImage.length; i ++ ) {
 			compressedImageInt[i] = (int)compressedImage[i];
 		}
 		compressedImageInt[compressedImageInt.length - 1] = height;
 		compressedImageInt[compressedImageInt.length - 2] = width;
 		compressedImageInt[compressedImageInt.length - 3] = (int)(theta*10000000);
-		
+		compressedImageInt[compressedImageInt.length - 4] = ratio
         ByteBuffer byteBuffer = ByteBuffer.allocate(compressedImageInt.length * 4);        
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(compressedImageInt);
