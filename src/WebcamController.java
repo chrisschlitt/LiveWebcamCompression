@@ -42,7 +42,14 @@ public class WebcamController {
 	class CompressionSelect implements ActionListener {
 		public void actionPerformed(ActionEvent ev) {
 			JRadioButton actedOn = (JRadioButton) ev.getSource();
-			System.out.println(actedOn.getText());
+			String compressionString = actedOn.getText();
+			if (compressionString.equals("None")) {
+				WebcamController.this.serverModel.setCompression(1);
+			} else if (compressionString.equals("1/2")) {
+				WebcamController.this.serverModel.setCompression(2);
+			} else if (compressionString.equals("1/4")) {
+				WebcamController.this.serverModel.setCompression(2);
+			}
 		}
 	}
 	
