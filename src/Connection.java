@@ -323,6 +323,7 @@ public class Connection {
     		System.out.println("Waiting to join");
     		discoverThreads[threadNumber].join();
     		System.out.println("Joined");
+    		threadNumber--;
     	}
     }
     
