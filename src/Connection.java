@@ -43,6 +43,7 @@ public class Connection {
      * @param receivingModel: ClientModel - The ClientModel that will be receiving the images (null for sender)
      */
     public Connection(int port, ClientModel receivingModel){
+    	System.out.println("Initializing Connection");
         // Set the port
         this.port = port;
         // Set the receiving model
@@ -112,6 +113,7 @@ public class Connection {
                     // System.out.println("Received Packet: " + message);
                     // Route the message
                     if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
+                    	System.out.println("Connected to Client");
                         // Received discovery message
                         // Set the client IP
                         Connection.this.connectedComputerIP = packet.getAddress();
@@ -121,6 +123,7 @@ public class Connection {
                         // Connection2.this.continueListening = false;
                         Connection.this.sendPacketData(sendData, packet.getAddress());
                     } else if (message.equals("DISCOVERY_RESPONSE") && !fromAddr.equals(localAddr)) {
+                    	System.out.println("Connected to Server");
                         // Received discovery response
                         // Set the connected computer (client) IP
                         Connection.this.connectedComputerIP = packet.getAddress();
@@ -154,6 +157,7 @@ public class Connection {
         this.discoveryThread = new Thread(new DiscoveryThread());
         // Start the discovery thread
         this.discoveryThread.start();
+        System.out.println("Listening...");
     }
     
     /**
@@ -191,6 +195,7 @@ public class Connection {
      *
      */
     public void discoverIP() throws Exception{
+    	System.out.println("Looking for the Server...");
         // Initiate the DatagramSocket
         DatagramSocket socket;
         socket = new DatagramSocket();
@@ -327,6 +332,7 @@ public class Connection {
                 // Prepare to receive the stream
                 this.prepareReceivingConnection();
                 // While the stream is open
+                System.out.println("Ready to receive strem");
                 while(Connection.this.startStreaming){
                 	// System.out.println("Ready to receive stream object");
                     // Receive the image
@@ -367,6 +373,7 @@ public class Connection {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Ready to stream");
         // System.out.println("Ready to send stream");
         // Set the start streaming flag
         this.startStreaming = true;
