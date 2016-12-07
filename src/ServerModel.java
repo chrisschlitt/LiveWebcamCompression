@@ -10,15 +10,35 @@ import com.github.sarxos.webcam.WebcamResolution;
 
 public class ServerModel {
 	private static int numPictures=1;
-	private Connection connection = new Connection(null);
-	
-	public void setupConnection() {
-		connection.beginListening();
-	}
-	
-	public void sendPicture(byte[] compressedImage) throws Exception {
-		connection.sendData(compressedImage);
-	}
+    // The connection to the server
+    private Connection connection = new Connection(8888, null);
+    
+    /**
+     * A method to setup the client server
+     */
+    public void setupConnection() {
+        // Begin listening for packets
+        connection.beginPacketListening();
+        // Wait until the client connects
+        try {
+            connection.discoveryThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // Prepare to stream data to the client
+        connection.beginStreaming();
+        while(!connection.startStreaming){
+            // Wait
+        }
+    }
+    
+    /**
+     * A wrapper method to stream a picture
+     * @param compressedImage: byte[] - Image to send
+     */
+    public void sendPicture(byte[] compressedImage) throws Exception {
+        connection.sendStreamData(compressedImage);
+    }
 	
 	public void getPicture(Webcam webcam) {
 		byte[] compressedBytes;

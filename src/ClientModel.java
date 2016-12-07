@@ -10,13 +10,28 @@ import com.github.sarxos.webcam.WebcamResolution;
 
 public class ClientModel {
 	private static int numPictures=1;
-	private Connection connection = new Connection(this);
-	
-	public void setupConnection() throws Exception {
-		connection.beginListening();
-		connection.discoverIP();
-	}
-	
+    // The connection to the server
+    private Connection connection;
+    
+    /**
+     * A method to setup the client server
+     */
+    public void setupConnection() throws Exception {
+        // Create the connection
+        connection = new Connection(8888, this);
+        // Begin listening for packets
+        connection.beginPacketListening();
+        // Discover the server's IP address
+        connection.discoverIP();
+        // Wait until the server is discovered
+        connection.discoveryThread.join();
+    }
+    
+    /**
+     * A callback method when a connection received an image
+     * 
+     * @param compressedImage: byte[] - Received image
+     */
 	public void receiveImage(byte[] compressedImage) throws Exception {
 		
 		int count;
