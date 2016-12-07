@@ -34,6 +34,7 @@ public class ClientModel {
      * @param compressedImage: byte[] - Received image
      */
 	public void receiveImage(byte[] compressedImage) throws Exception {	
+		//System.out.println("RECEIVING PACKAGE " + numPictures);
 		int count;
 		int x;
 		int y;
