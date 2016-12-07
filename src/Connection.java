@@ -262,6 +262,10 @@ public class Connection {
                 requestPacket = new DatagramPacket(request, request.length, tempAddr, this.port);
                 // System.out.println("Sending a discovery packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
                 
+                if(("158.130.170.139".equals(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j)) || ("158.130.162.84".equals(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j))){
+                	System.out.println(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
+                }
+                
                 // Send the packet
                 socket.send(requestPacket);
                 // Check if the discovery response packet has been received
