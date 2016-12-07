@@ -90,7 +90,7 @@ public class Connection {
                 
                 // Continue listening
                 while(Connection.this.continueListening){
-                	System.out.println("Ready to receive a packet");
+                	// System.out.println("Ready to receive a packet");
                     // Listen on specified port
                     socket = new DatagramSocket(Connection.this.port, InetAddress.getByName("0.0.0.0"));
                     socket.setBroadcast(true);
@@ -109,7 +109,7 @@ public class Connection {
                     } catch (Exception e){
                         fromAddr = packet.getAddress().getHostAddress().toString();
                     }
-                    System.out.println("Received Packet: " + message);
+                    // System.out.println("Received Packet: " + message);
                     // Route the message
                     if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
                         // Received discovery message
@@ -164,7 +164,7 @@ public class Connection {
      * @return success: boolean - Success flag
      */
     public boolean sendPacketData(byte[] data, InetAddress address) throws IOException{
-    	System.out.println("Sending a packet");
+    	// System.out.println("Sending a packet");
         // Initiate the DatagramSocket
         DatagramSocket socket;
         socket = new DatagramSocket();
@@ -214,7 +214,7 @@ public class Connection {
         // Create the socket
         socket = new DatagramSocket();
         socket.setBroadcast(true);
-        System.out.println("Beginning discovery");
+        // System.out.println("Beginning discovery");
         while(ii < 255){
             // Correct the IP address
             int add = 0;
@@ -237,7 +237,7 @@ public class Connection {
                     continue;
                 }
                 requestPacket = new DatagramPacket(request, request.length, tempAddr, this.port);
-                System.out.println("Sending a discovery packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
+                // System.out.println("Sending a discovery packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
                 
                 // Send the packet
                 socket.send(requestPacket);
@@ -290,7 +290,7 @@ public class Connection {
          * @return success: boolean - A success flag
          */
         public boolean prepareReceivingConnection() throws IOException{
-        	System.out.println("Preparing to receive stream");
+        	// System.out.println("Preparing to receive stream");
             // Create the socket
             this.serverSocket = new ServerSocket(4445);
             // Send the stream ready packet to the server
@@ -325,7 +325,7 @@ public class Connection {
                 this.prepareReceivingConnection();
                 // While the stream is open
                 while(Connection.this.startStreaming){
-                	System.out.println("Ready to receive stream object");
+                	// System.out.println("Ready to receive stream object");
                     // Receive the image
                     this.receivingModel.receiveImage((byte[])this.inputStream.readObject());
                 }
@@ -345,7 +345,7 @@ public class Connection {
         this.listeningThread = new Thread(new ListeningThread(this.receivingModel));
         // Start the listening thread
         this.listeningThread.start();
-        System.out.println("Started the stream listening thread");
+        // System.out.println("Started the stream listening thread");
     }
     
     /**
@@ -364,7 +364,7 @@ public class Connection {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Ready to send stream");
+        // System.out.println("Ready to send stream");
         // Set the start streaming flag
         this.startStreaming = true;
     }
@@ -374,7 +374,7 @@ public class Connection {
      * @param o: Object - The data to stream
      */
     public void sendStreamData(Object o){
-    	System.out.println("Sending a stream object");
+    	// System.out.println("Sending a stream object");
         // Cast the object as a byte array
         byte[] data = (byte[])o;
         // Write the object to the stream
