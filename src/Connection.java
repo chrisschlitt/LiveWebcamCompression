@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * Connection
@@ -178,23 +179,122 @@ public class Connection {
      */
     public boolean sendPacketData(byte[] data, InetAddress address) throws IOException{
     	// System.out.println("Sending a packet");
-        // Initiate the DatagramSocket
-        DatagramSocket socket;
-        socket = new DatagramSocket();
-        socket.setBroadcast(true);
-        
-        // Create and send the packet
-        DatagramPacket requestPacket = new DatagramPacket(data, data.length, address, this.port);
-        socket.send(requestPacket);
-        // Send second packet to ensure delivery
-        socket.send(requestPacket);
-        // Send third packet to ensure delivery
-        socket.send(requestPacket);
-        
-        // Close the socket
-        socket.close();
+    	for(int i=0; i < 4; i++){
+    		// Initiate the DatagramSocket
+            DatagramSocket socket;
+            socket = new DatagramSocket();
+            socket.setBroadcast(true);
+            
+            // Create and send the packet
+            DatagramPacket requestPacket = new DatagramPacket(data, data.length, address, this.port);
+            socket.send(requestPacket);
+            // Send second packet to ensure delivery
+            socket.send(requestPacket);
+            // Send third packet to ensure delivery
+            socket.send(requestPacket);
+            
+            // Close the socket
+            socket.close();
+    	}
         
         return true;
+    }
+    
+    public class DiscoverThread implements Runnable {
+    	
+    	public void findServer() throws Exception{
+        	System.out.println("Looking for the Server...");
+            // Initiate the DatagramSocket
+            DatagramSocket socket;
+            socket = new DatagramSocket();
+            socket.setBroadcast(true);
+            
+            // Create the response header
+            byte[] request = "DISCOVERY".getBytes();
+            
+            // Create and send the packet to the local subnet
+            DatagramPacket requestPacket;
+            
+            // Get the local IP address
+            InetAddress tempAddr;
+            String localAddr = InetAddress.getLocalHost().toString().split("/")[1];
+            String[] ipAddress = InetAddress.getLocalHost().toString().split("/")[1].split("\\.");
+            
+            // Loop through all IP addresses on the local subnet, then try +/- subnets
+            int ipthree = Integer.parseInt(ipAddress[2]);
+            int ii = 1;
+            
+            // System.out.println("Beginning discovery");
+            while(ii < 255){
+                // Correct the IP address
+                int add = 0;
+                if(ipthree > 255){
+                    ipthree = ipthree - 255;
+                    add = 1;
+                }
+                if(ipthree < 0){
+                    ipthree = ipthree + 255;
+                    add = -1;
+                }
+                
+                // Create the socket
+                socket = new DatagramSocket();
+                socket.setBroadcast(true);
+                
+                // Loop through the local subnet
+                for(int j=0; j<255; j++){
+                    // Check addresses on specified subnet
+                    tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
+                    
+                    // Check if sending message to own IP address and filter out
+                    if(localAddr.trim().equals((ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j).trim())){
+                        continue;
+                    }
+                    requestPacket = new DatagramPacket(request, request.length, tempAddr, Connection.this.port);
+                    // System.out.println("Sending a discovery packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
+                    
+                    // Send the packet
+                    socket.send(requestPacket);
+                    // Check if the discovery response packet has been received
+                    if(Connection.this.connectedComputerIP != null){
+                        // If the server has been found, break the loop
+                        break;
+                    }
+                }
+                
+                // Close the socket
+                socket.close();
+                
+                // Restore ipthree counter for math
+                ipthree = ipthree + (255 * add);
+                
+                // Calculate next ipthree
+                if(ii % 2 == 0){
+                    ipthree = ipthree + ii;
+                } else {
+                    ipthree = ipthree - ii;
+                }
+                
+                ii++;
+                if(Connection.this.connectedComputerIP != null){
+                    // If the server has been found, break the loop
+                    break;
+                }
+            }
+    	}
+    	
+        /**
+         * The run method
+         */
+        @Override
+        public void run() {
+        	try {
+				this.findServer();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
     }
     
     /**
@@ -208,85 +308,20 @@ public class Connection {
      *
      */
     public void discoverIP() throws Exception{
-    	System.out.println("Looking for the Server...");
-        // Initiate the DatagramSocket
-        DatagramSocket socket;
-        socket = new DatagramSocket();
-        socket.setBroadcast(true);
-        
-        // Create the response header
-        byte[] request = "DISCOVERY".getBytes();
-        
-        // Create and send the packet to the local subnet
-        DatagramPacket requestPacket;
-        
-        // Get the local IP address
-        InetAddress tempAddr;
-        String localAddr = InetAddress.getLocalHost().toString().split("/")[1];
-        String[] ipAddress = InetAddress.getLocalHost().toString().split("/")[1].split("\\.");
-        
-        // Loop through all IP addresses on the local subnet, then try +/- subnets
-        int ipthree = Integer.parseInt(ipAddress[2]);
-        int ii = 1;
-        
-        // System.out.println("Beginning discovery");
-        while(ii < 255){
-            // Correct the IP address
-            int add = 0;
-            if(ipthree > 255){
-                ipthree = ipthree - 255;
-                add = 1;
-            }
-            if(ipthree < 0){
-                ipthree = ipthree + 255;
-                add = -1;
-            }
-            
-            // Create the socket
-            socket = new DatagramSocket();
-            socket.setBroadcast(true);
-            
-            // Loop through the local subnet
-            for(int j=0; j<255; j++){
-                // Check addresses on specified subnet
-                tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
-                
-                // Check if sending message to own IP address and filter out
-                if(localAddr.trim().equals((ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j).trim())){
-                    continue;
-                }
-                requestPacket = new DatagramPacket(request, request.length, tempAddr, this.port);
-                // System.out.println("Sending a discovery packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
-                
-                // Send the packet
-                socket.send(requestPacket);
-                // Check if the discovery response packet has been received
-                if(this.connectedComputerIP != null){
-                    // If the server has been found, break the loop
-                    break;
-                }
-            }
-            
-            // Close the socket
-            socket.close();
-            
-            // Restore ipthree counter for math
-            ipthree = ipthree + (255 * add);
-            
-            // Calculate next ipthree
-            if(ii % 2 == 0){
-                ipthree = ipthree + ii;
-            } else {
-                ipthree = ipthree - ii;
-            }
-            
-            ii++;
-            if(this.connectedComputerIP != null){
-                // If the server has been found, break the loop
-                break;
-            }
-        }
-        
+    	int numThreads = 4;
+    	int threadNumber = 0;
+    	Thread discoverThreads[] = new Thread[numThreads];
+    	while((threadNumber <= numThreads) && (this.connectedComputerIP == null)){
+			discoverThreads[threadNumber] = new Thread(new DiscoverThread());
+			discoverThreads[threadNumber].start();
+			Thread.sleep(1000);
+			threadNumber++;
+    	}
+    	while(threadNumber >= 0){
+    		System.out.println("Waiting to join");
+    		discoverThreads[threadNumber].join();
+    		System.out.println("Joined");
+    	}
     }
     
     /**
