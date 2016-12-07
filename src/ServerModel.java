@@ -67,6 +67,10 @@ public class ServerModel {
     		 try {
                  while (!ServerModel.this.doneStreaming) {
                  	BufferedImage image = webcam.getImage();
+                 	
+                 	if (imageQueue.size()>5){
+                 		imageQueue.take();
+                 	}
                  	imageQueue.put(image);
                  	try {
                  	    Thread.sleep(33);
