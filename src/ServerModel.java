@@ -12,6 +12,7 @@ import com.github.sarxos.webcam.Webcam;
 public class ServerModel {
 	private static int numPictures=1;
 	private boolean doneStreaming = false;
+	private int compression = 2;
 	private Webcam webcam;
 	private Thread takePictureThread;
 	private Thread serverProcessPictureThread;
@@ -40,6 +41,10 @@ public class ServerModel {
         while(!connection.startStreaming){
             // Wait
         }
+    }
+    
+    public void setCompression(int compression) {
+    	this.compression = compression;
     }
     
     public void setDoneStreaming(boolean doneStreaming) {
@@ -117,7 +122,7 @@ public class ServerModel {
         				count++;
         			}
         			
-        			ImageCompression imgCompression = new ImageCompression(img,2);
+        			ImageCompression imgCompression = new ImageCompression(img,ServerModel.this.compression);
         			compressedBytes = imgCompression.getCompressedImage();
         			sendPicture(compressedBytes);
                 }
