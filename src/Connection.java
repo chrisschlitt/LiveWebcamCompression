@@ -113,28 +113,35 @@ public class Connection {
                     // System.out.println("Received Packet: " + message);
                     // Route the message
                     if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
-                    	System.out.println("Connected to Client");
-                        // Received discovery message
-                        // Set the client IP
-                        Connection.this.connectedComputerIP = packet.getAddress();
-                        
-                        // Respond to the client, confirming this is the server
-                        byte[] sendData = "DISCOVERY_RESPONSE".getBytes();
-                        // Connection2.this.continueListening = false;
-                        Connection.this.sendPacketData(sendData, packet.getAddress());
+                    	if(Connection.this.connectedComputerIP != null){
+                    		System.out.println("Connected to Client");
+                            // Received discovery message
+                            // Set the client IP
+                            Connection.this.connectedComputerIP = packet.getAddress();
+                            
+                            // Respond to the client, confirming this is the server
+                            byte[] sendData = "DISCOVERY_RESPONSE".getBytes();
+                            // Connection2.this.continueListening = false;
+                            Connection.this.sendPacketData(sendData, packet.getAddress());
+                    	}
                     } else if (message.equals("DISCOVERY_RESPONSE") && !fromAddr.equals(localAddr)) {
-                    	System.out.println("Connected to Server");
-                        // Received discovery response
-                        // Set the connected computer (client) IP
-                        Connection.this.connectedComputerIP = packet.getAddress();
-                        // Stop packet listening
-                        Connection.this.continueListening = false;
-                        // Prepare the receiving stream
-                        Connection.this.beginListeningForStream();
+                    	if(Connection.this.continueListening){
+                    		// Stop packet listening
+                    		Connection.this.continueListening = false;
+                    		System.out.println("Connected to Server");
+                            // Received discovery response
+                            // Set the connected computer (client) IP
+                            Connection.this.connectedComputerIP = packet.getAddress();
+                            // Prepare the receiving stream
+                            Connection.this.beginListeningForStream();
+                    	}
+                    	
                     } else if (message.equals("STREAMREADY")) {
-                        // Received stream ready response
-                        // Stop packet listening
-                        Connection.this.continueListening = false;
+                    	if(Connection.this.continueListening){
+                    		// Received stream ready response
+                            // Stop packet listening
+                            Connection.this.continueListening = false;
+                    	}
                     }
                     
                     // Close the socket
@@ -176,6 +183,14 @@ public class Connection {
         
         // Create and send the packet
         DatagramPacket requestPacket = new DatagramPacket(data, data.length, address, this.port);
+        socket.send(requestPacket);
+        try {
+			Thread.sleep(10);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        // Send second packet to ensure delivery
         socket.send(requestPacket);
         
         // Close the socket
