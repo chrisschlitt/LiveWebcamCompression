@@ -248,7 +248,8 @@ public class Connection {
                     break;
                 }
             }
-         // Close the socket
+            
+            // Close the socket
             socket.close();
             
             // Restore ipthree counter for math
