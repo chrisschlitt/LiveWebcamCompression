@@ -311,12 +311,14 @@ public class Connection {
     	int numThreads = 4;
     	int threadNumber = 0;
     	Thread discoverThreads[] = new Thread[numThreads];
+
     	while((threadNumber <= numThreads) && (this.connectedComputerIP == null)){
 			discoverThreads[threadNumber] = new Thread(new DiscoverThread());
 			discoverThreads[threadNumber].start();
 			Thread.sleep(1000);
 			threadNumber++;
     	}
+    	threadNumber--;
     	while(threadNumber >= 0){
     		System.out.println("Waiting to join");
     		discoverThreads[threadNumber].join();
