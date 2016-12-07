@@ -14,7 +14,7 @@ public class ServerModel implements Model {
 	private Webcam webcam;
 	private Thread takePictureThread;
 	private Thread serverProcessPictureThread;
-	private ServerView serverView;
+	private DisplayView serverView;
 	
 	private BlockingQueue<BufferedImage> imageQueue = new LinkedBlockingQueue<BufferedImage>();
     // The connection to the server
@@ -152,7 +152,7 @@ public class ServerModel implements Model {
 	}
 	
     public void setView(JFrame serverView) {
-		this.serverView=(ServerView) serverView;
+		this.serverView=(DisplayView) serverView;
 	}
     
 	public void getPicture(Webcam webcam) {

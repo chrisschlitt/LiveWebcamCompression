@@ -14,7 +14,7 @@ public class ClientModel implements Model {
 	private static int numPictures=1;
     // The connection to the server
     private Connection connection;
-    private ClientView clientView;
+    private DisplayView clientView;
     
 	private boolean doneStreaming = false;
 	private int compression = 2;
@@ -156,7 +156,7 @@ public class ClientModel implements Model {
 	}
 	
 	public void setView(JFrame clientView) {
-		this.clientView=(ClientView) clientView;
+		this.clientView=(DisplayView) clientView;
 	}
 	
 	public void getPicture(Webcam webcam) {
