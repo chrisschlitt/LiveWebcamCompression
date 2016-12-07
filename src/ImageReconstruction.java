@@ -20,18 +20,30 @@ public class ImageReconstruction {
 	     int[] reconstructedArray = new int[intBuf.remaining()];
 		 intBuf.get(reconstructedArray);
 		 
-		 double[][] imgTmp = construct2rowArray(reconstructedArray);
-		 Matrix imgTmpMatrix = new Matrix(imgTmp);
-		 Matrix rotationMatrix = getRotationMatrix(theta);
-		 rotationMatrix = rotationMatrix.transpose();
-		 Matrix expandedImageMatrix = rotationMatrix.times(imgTmpMatrix);
-			
-		 double [][] expandedImageTmp = reshape(expandedImageMatrix.getArray(), width, height);
+		 int totalSize = reconstructedArray.length;
+		 height = reconstructedArray[totalSize-1];
+		 width = reconstructedArray[totalSize-2];
+		 theta = reconstructedArray[totalSize-3];
+		 ratio = reconstructedArray[totalSize-4];
 		 
-		 double[][] expandedImage = rephaseImage(expandedImageTmp);		 
+		 if (ratio != 1) {
+			 double[][] imgTmp = construct2rowArray(reconstructedArray);
+			 Matrix imgTmpMatrix = new Matrix(imgTmp);
+			 Matrix rotationMatrix = getRotationMatrix(theta);
+			 rotationMatrix = rotationMatrix.transpose();
+			 Matrix expandedImageMatrix = rotationMatrix.times(imgTmpMatrix);
+	
+			 double [][] expandedImageTmp = reshape(expandedImageMatrix.getArray(), width, height);
 		 
-		 reconstructedImage = convertDoubletoInt(expandedImage);
+			  double[][] expandedImage = rephaseImage(expandedImageTmp);		 
 		 
+			 reconstructedImage = convertDoubletoInt(expandedImage);
+		 	}
+		 	else {
+		 		int[] img = new int[width*height];
+		 		img = reconstructedArray;
+		 		reconstructedImage = reshapeInt(reconstructedArray, width, height);
+		 	}
 	}
 	
 	/**
@@ -158,6 +170,30 @@ public class ImageReconstruction {
 				 k++;
 			 }
  		 }
+		 
+		 return  output;
+	 }
+	
+	public static int[][] reshapeInt(int[][] A, int m, int n) {
+		 
+		 int k = 0;
+		 int output[][] = new int[n][m];
+		 int oneDArray[] = new int[A[0].length*A.length];
+		 
+		 for (int i= 0; i < A.length; i++) {
+			 for ( int j = 0; j < A[0].length ; j++) {
+				 oneDArray[k] = A[i][j];
+				 k++;
+			 }
+		 }
+		 
+		 k = 0;
+		 for(int i = 0; i < n; i++) {
+			 for (int j = 0; j < m; j++) {
+				 output[i][j] = oneDArray[k];
+				 k++;
+			 }
+		 }
 		 
 		 return  output;
 	 }
