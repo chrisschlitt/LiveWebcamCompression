@@ -18,12 +18,15 @@ public class ServerModel {
 	
 	private BlockingQueue<BufferedImage> imageQueue = new LinkedBlockingQueue<BufferedImage>();
     // The connection to the server
-    private Connection connection = new Connection(8888, null);
+    private Connection connection; 
     
     /**
      * A method to setup the client server
      */
     public void setupConnection() {
+    	
+    	connection = new Connection(8888, null);
+    	
         // Begin listening for packets
         connection.beginPacketListening();
         // Wait until the client connects
@@ -114,7 +117,7 @@ public class ServerModel {
         				count++;
         			}
         			
-        			ImageCompression imgCompression = new ImageCompression(img);
+        			ImageCompression imgCompression = new ImageCompression(img,2);
         			compressedBytes = imgCompression.getCompressedImage();
         			sendPicture(compressedBytes);
                 }
