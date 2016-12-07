@@ -63,7 +63,7 @@ public class ImageCompression {
 		}
 		else {
 			int k = 0;
-			double uncompressedImage[] = new uncompressedImage[totalSize];
+			double uncompressedImage[] = new double[totalSize];
 			//Converting original image from int to double
 			for(int i = 0; i < image.length; i++)
 		    {
@@ -72,7 +72,7 @@ public class ImageCompression {
 		        	k++;
 		    }
 			
-			compressedImageBytes =  setupDataForCompression(originalImage, 0, ratio);
+			compressedImageBytes =  setupDataForCompression(uncompressedImage, 0, ratio);
 		}
 	}
 
@@ -108,12 +108,13 @@ public class ImageCompression {
 		compressedImageInt[compressedImageInt.length - 1] = height;
 		compressedImageInt[compressedImageInt.length - 2] = width;
 		compressedImageInt[compressedImageInt.length - 3] = (int)(theta*10000000);
-		compressedImageInt[compressedImageInt.length - 4] = ratio
+		compressedImageInt[compressedImageInt.length - 4] = ratio;
         ByteBuffer byteBuffer = ByteBuffer.allocate(compressedImageInt.length * 4);        
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(compressedImageInt);
 		return byteBuffer.array();
 	}
+	
 
 	/**
 	 * Getter for the Compressed Images 

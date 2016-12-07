@@ -7,6 +7,7 @@ import Jama.Matrix;
 public class ImageReconstruction {
 	private int[][] reconstructedImage;
 	double theta;
+	int ratio;
 	private int width;
 	private int height;
 	/**
@@ -40,9 +41,9 @@ public class ImageReconstruction {
 			 reconstructedImage = convertDoubletoInt(expandedImage);
 		 	}
 		 	else {
-		 		int[] img = new int[width*height];
-		 		img = reconstructedArray;
-		 		reconstructedImage = reshapeInt(reconstructedArray, width, height);
+		 		int[][] img = new int[1][width*height];
+		 		img[0] = reconstructedArray;
+		 		reconstructedImage = reshapeInt(img, width, height);
 		 	}
 	}
 	

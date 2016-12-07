@@ -20,6 +20,7 @@ public class ClientView extends JFrame {
 	}
 	
 	public void displayImage(BufferedImage image) {
+		this.panel.removeAll();
 		this.panel.add(new JLabel(new ImageIcon(image)));
 		this.pack();
 	}
