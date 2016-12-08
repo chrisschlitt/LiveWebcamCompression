@@ -28,6 +28,12 @@ public class Connection {
     private int outgoingPort;
     // The output stream
     private ObjectOutputStream outputStream;
+    // The input stream
+    public ObjectInputStream inputStream;
+    // IncomingSocket
+    private ServerSocket serverSocket;
+    // IncomingSocket
+    private Socket incomingSocket;
     // A flag to continue listening for packets
     public boolean continueListening;
     // A flag to start streaming
@@ -38,12 +44,16 @@ public class Connection {
     public Thread discoveryThread;
     // Receiving Thread
     public Thread listeningThread;
+    // End Thread
+    public Thread endThread;
     // Output Socket
     public Socket streamingSocket;
     // The receiving model for callbacks
     public Model receivingModel;
     // Server indicator
     public boolean isServer;
+    
+    
     
     /**
      * Constructor
@@ -99,6 +109,10 @@ public class Connection {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+        // Create the end listening thread
+        this.endThread = new Thread(new EndThread());
+        // Start the end listening thread
+        this.endThread.start();
         System.out.println("Stream setup successfully");
 
     }
@@ -392,75 +406,6 @@ public class Connection {
     	}
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     /**
      * A Runnable class to handle listening for the data stream
      *
@@ -468,12 +413,6 @@ public class Connection {
      *
      */
     public class ListeningThread implements Runnable {
-        // Input Stream
-        private ObjectInputStream inputStream;
-        // IncomingSocket
-        private ServerSocket serverSocket;
-        // IncomingSocket
-        private Socket incomingSocket;
         // Receiving Model
         private Model receivingModel;
         
@@ -486,7 +425,7 @@ public class Connection {
         	// System.out.println("Preparing to receive stream");
             // Create the socket
         	try{
-        		this.serverSocket = new ServerSocket(Connection.this.incomingPort);
+        		Connection.this.serverSocket = new ServerSocket(Connection.this.incomingPort);
         	} catch(Exception e){
         		
         		e.printStackTrace();
@@ -499,10 +438,10 @@ public class Connection {
             Connection.this.sendPacketData(data, Connection.this.connectedComputerIP);
             // System.out.println("Here1");
             // Accept the incoming stream (break until accepted)
-            this.incomingSocket = this.serverSocket.accept();
+            Connection.this.incomingSocket = Connection.this.serverSocket.accept();
             // System.out.println("Here2");
             // Create the input stream
-            this.inputStream = new ObjectInputStream(this.incomingSocket.getInputStream());
+            Connection.this.inputStream = new ObjectInputStream(Connection.this.incomingSocket.getInputStream());
             // System.out.println("Finished preparing to receive stream");
             return true;
         }
@@ -533,7 +472,7 @@ public class Connection {
                 while(Connection.this.continueStreaming){
                 	// System.out.println("Ready to receive stream object");
                     // Receive the image
-                    this.receivingModel.receiveImage((byte[])this.inputStream.readObject());
+                    this.receivingModel.receiveImage((byte[])Connection.this.inputStream.readObject());
 
                 }
                 System.out.println("Stopped Streaming");
@@ -592,8 +531,102 @@ public class Connection {
         try {
             this.outputStream.writeObject(data);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("BROKEN PIPE");
         }
     }
     
+    public class EndThread implements Runnable {
+    	boolean receivedEnd = false;
+    	
+        /**
+         * The run method
+         */
+        @Override
+        public void run() {
+            try {
+                // Initiate the DatagramSocket
+                DatagramSocket socket;
+                // Get local IP string
+                String localAddr = InetAddress.getLocalHost().toString().split("/")[1];
+                
+                // Continue listening
+                while(!receivedEnd){
+                	// System.out.println("Ready to begin receiving a packet");
+                    // Listen on specified port
+                    socket = new DatagramSocket(Connection.this.packetPort, InetAddress.getByName("0.0.0.0"));
+                    socket.setBroadcast(true);
+                    
+                    // System.out.println("Ready to receive another packet");
+                    
+                    // Receive a packet
+                    byte[] received = new byte[1000];
+                    DatagramPacket packet = new DatagramPacket(received, received.length);
+                    // System.out.println("Receive Packet? (" + System.currentTimeMillis() + ")");
+                    socket.receive(packet);
+                    // System.out.println("Packet received");
+                    // Get package message
+                    String message = new String(packet.getData()).trim();
+                    // Get package address
+                    String fromAddr = "";
+                    try {
+                        fromAddr = packet.getAddress().toString().split("/")[1];
+                    } catch (Exception e){
+                        fromAddr = packet.getAddress().getHostAddress().toString();
+                    }
+                    // System.out.println("Received Packet: " + message);
+                    // Route the message
+                    if(message.equals("END") && !fromAddr.equals(localAddr)){
+                    	if(!receivedEnd){
+                    		receivedEnd = true;
+                    		Connection.this.outputStream.close();
+                    		Connection.this.inputStream.close();
+                    		Connection.this.serverSocket.close();
+                    		Connection.this.incomingSocket.close();
+                    		Connection.this.streamingSocket.close();
+                    	}
+                    }
+                }
+            } catch(Exception e){
+            	e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * A method to close the connections
+     */
+    public void exit(){
+    	try {
+			this.outputStream.close();
+		} catch (IOException e4) {
+		}
+		try {
+			this.inputStream.close();
+		} catch (IOException e3) {
+		}
+		try {
+			this.serverSocket.close();
+		} catch (IOException e2) {
+		}
+		try {
+			this.incomingSocket.close();
+		} catch (IOException e1) {
+		}
+		try {
+			this.streamingSocket.close();
+		} catch (IOException e) {
+		}
+    }
+    
+    /**
+     * A method to close the connections
+     */
+    public void close(){
+    	byte[] data = "END".getBytes();
+    	try {
+			this.sendPacketData(data, this.connectedComputerIP);
+		} catch (IOException e) {
+		}
+    	this.exit();
+    }
 }
