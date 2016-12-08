@@ -6,12 +6,12 @@ import java.awt.event.ActionListener;
 public class MenuView extends JFrame {
 	
 	JButton joinButton = new JButton("Join Chat");
+	JLabel details = new JLabel("Choose server to broadcast or client to receive video", SwingConstants.CENTER);
 	
 	public MenuView() {
 		JPanel mainMenu = new JPanel(new GridLayout(0,1));
 		JPanel top = new JPanel(new GridLayout(0,1));
 		JLabel welcome = new JLabel("Welcome to the Webcam App!", SwingConstants.CENTER);
-		JLabel details = new JLabel("Choose server to broadcast or client to receive video", SwingConstants.CENTER);
 		
 		Font font = new Font("Courier", Font.BOLD,36);
 		welcome.setFont(font);

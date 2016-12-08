@@ -41,6 +41,8 @@ public class WebcamModel implements Model {
     }
     
     public void doneStreaming(){
+    	Webcam.shutdown();
+    	webcam.close();
     	this.doneStreaming = true;
     }
     
@@ -90,12 +92,11 @@ public class WebcamModel implements Model {
             		int r = 0;
             		int g = 0;
             		int b = 0;
-                    BufferedImage image = ServerModel.this.imageQueue.take();
-            		            		
-                    RGBCompression rgbCompression = new RGBCompression(image, ServerModel.this.compression);
-                    compressedBytes = rgbCompression.getCompressedImage();
-                
-                 	sendPicture(compressedBytes);
+            		BufferedImage image = WebcamModel.this.imageQueue.take();
+            		
+            		RGBCompression rgbCompression = new RGBCompression(image, WebcamModel.this.compression);
+            		compressedBytes = rgbCompression.getCompressedImage();
+        			sendPicture(compressedBytes);
                 }
                 
            } catch (Exception e) {
@@ -106,29 +107,8 @@ public class WebcamModel implements Model {
     }
     
     public void receiveImage(byte[] compressedImage) throws Exception {	 	
-		int count;
-		int x;
-		int y;
-		int average;
-		ImageReconstruction imgReconstruction = new ImageReconstruction(compressedImage);
-		int[][] expandedImg;
-		expandedImg = imgReconstruction.getReconstructedImage();
-		count = 0; 
-		x = 0;
-		y = 0;	
-		
-		BufferedImage reconstructed = new BufferedImage(expandedImg[0].length, expandedImg.length, BufferedImage.TYPE_INT_ARGB);
-		while (count < expandedImg.length*expandedImg[0].length) {
-			if (x==expandedImg[0].length) {
-				x = 0;
-				y++;
-			}
-			
-			average = expandedImg[y][x];	
-			reconstructed.setRGB(x, y, new Color(average, average, average).getRGB());
-			x++;
-			count++;
-		}
+    	RGBReconstruction rgbReconstruction = new RGBReconstruction(compressedImage);
+    	BufferedImage reconstructed = rgbReconstruction.getReconstructedImage();
 		this.serverView.displayImage(reconstructed);
 		numPictures++;
 	}
