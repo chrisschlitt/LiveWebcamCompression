@@ -15,19 +15,16 @@ public class WebcamController {
 	private MenuView menu;
 	private DisplayView displayView;
 	private Webcam webcam;
-	private ServerModel serverModel;
-	private ClientModel clientModel;
+	private WebcamModel webcamModel;
 	
-	public WebcamController (MenuView menu, DisplayView displayView, ServerModel serverModel, ClientModel clientModel, Webcam webcam) {
+	public WebcamController (MenuView menu, DisplayView displayView, WebcamModel webcamModel, Webcam webcam) {
 		
 		this.webcam = webcam;
 		this.menu = menu;
 		this.displayView = displayView;
-		this.serverModel = serverModel;
-		this.clientModel = clientModel;
+		this.webcamModel = webcamModel;
 		
-		menu.addClientListener(new ClientSelect());
-		menu.addServerListener(new ServerSelect());
+		menu.addListener(new JoinAction());
 		menu.setVisible(true);
 		
 	}	
@@ -37,52 +34,33 @@ public class WebcamController {
 			JRadioButton actedOn = (JRadioButton) ev.getSource();
 			String compressionString = actedOn.getText();
 			if (compressionString.equals("None")) {
-				WebcamController.this.serverModel.setCompression(1);
+				WebcamController.this.webcamModel.setCompression(1);
 			} else if (compressionString.equals("1/2")) {
-				WebcamController.this.serverModel.setCompression(2);
+				WebcamController.this.webcamModel.setCompression(2);
 			} else if (compressionString.equals("1/4")) {
-				WebcamController.this.serverModel.setCompression(2);
+				WebcamController.this.webcamModel.setCompression(2);
 			}
 		}
 	}
 	
-	class ClientCloseAction implements ActionListener {
+	class CloseAction implements ActionListener {
 		public void actionPerformed(ActionEvent ev) {
-			clientModel.closeConnection();
+			webcamModel.closeConnection();
 		}
 	}
 	
-	class ServerCloseAction implements ActionListener {
-		public void actionPerformed(ActionEvent ev) {
-			serverModel.closeConnection();
-		}
-	}
-	
-	class ServerSelect implements ActionListener {
+
+	class JoinAction implements ActionListener {
 		public void actionPerformed(ActionEvent ev) {
 			displayView.setVisible(true);
 			menu.setVisible(false);
 			displayView.addSelectionListener(new CompressionSelect());
-			displayView.addCloseListener(new ClientCloseAction());
-			serverModel.setupConnection();
-			serverModel.getPicture(webcam);
+			displayView.addCloseListener(new CloseAction());
+			webcamModel.setupConnection();
+			webcamModel.getPicture(webcam);
 			
 		}
 	}
-	
-	class ClientSelect implements ActionListener {
-		public void actionPerformed(ActionEvent ev) {
-			displayView.setVisible(true);
-			menu.setVisible(false);
-			displayView.addSelectionListener(new CompressionSelect());
-			displayView.addCloseListener(new ClientCloseAction());
-			try {
-				clientModel.setupConnection();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			clientModel.getPicture(webcam);
-		}
-	}	
+
 }
 

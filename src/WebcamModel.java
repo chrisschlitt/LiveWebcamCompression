@@ -1,6 +1,5 @@
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -8,32 +7,37 @@ import javax.swing.JFrame;
 
 import com.github.sarxos.webcam.Webcam;
 
-
-
-public class ClientModel implements Model {
+public class WebcamModel implements Model {
 	private static int numPictures=1;
-    // The connection to the server
-    private Connection connection;
-    private DisplayView clientView;
-    
 	private boolean doneStreaming = false;
 	private int compression = 2;
 	private Webcam webcam;
 	private Thread takePictureThread;
-	private Thread clientProcessPictureThread;
+	private Thread serverProcessPictureThread;
+	private DisplayView serverView;
+	
 	private BlockingQueue<BufferedImage> imageQueue = new LinkedBlockingQueue<BufferedImage>();
+    // The connection to the server
+    private Connection connection; 
     
     /**
      * A method to setup the client server
      */
-    public void setupConnection() throws Exception {
-    	connection = new Connection(8888, 6987, 4555, this);
-        connection.connectToServer();
+    public void setupConnection() {
+    	
+    	connection = new Connection(8888, 4555, 6987, this);
+        connection.connect();
     }
     
     public void closeConnection() {
     	this.doneStreaming = true;
-    	connection.close();
+    	if (connection!=null) {
+    		connection.close();
+    	}
+    }
+    
+    public void setCompression(int compression) {
+    	this.compression = compression;
     }
     
     /**
@@ -44,12 +48,11 @@ public class ClientModel implements Model {
         connection.sendStreamData(compressedImage);
     }
     
-    
     public class TakePictureThread implements Runnable {
-    	private Webcam webcam = ClientModel.this.webcam;
+    	private Webcam webcam = WebcamModel.this.webcam;
     	public void run() {
     		 try {
-                 while (!ClientModel.this.doneStreaming) {
+                 while (!WebcamModel.this.doneStreaming) {
                  	BufferedImage image = webcam.getImage();
                  	
                  	if (imageQueue.size()>5){
@@ -70,20 +73,20 @@ public class ClientModel implements Model {
     }
     
     
-    public class ClientProcessPictureThread implements Runnable {
+    public class ServerProcessPictureThread implements Runnable {
         /**
          * The run method
          */
         @Override
         public void run() {
             try {
-                while (!ClientModel.this.doneStreaming) {
+                while (!WebcamModel.this.doneStreaming) {
                 	byte[] compressedBytes;
             		Color color;
             		int r = 0;
             		int g = 0;
             		int b = 0;
-            		BufferedImage image = ClientModel.this.imageQueue.take();
+            		BufferedImage image = WebcamModel.this.imageQueue.take();
             		
         			int[] imageColors = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
         			int count = 0; 
@@ -110,7 +113,7 @@ public class ClientModel implements Model {
         				count++;
         			}
         			
-        			ImageCompression imgCompression = new ImageCompression(img,ClientModel.this.compression);
+        			ImageCompression imgCompression = new ImageCompression(img,WebcamModel.this.compression);
         			compressedBytes = imgCompression.getCompressedImage();
         			sendPicture(compressedBytes);
                 }
@@ -122,12 +125,7 @@ public class ClientModel implements Model {
        }
     }
     
-    /**
-     * A callback method when a connection received an image
-     * 
-     * @param compressedImage: byte[] - Received image
-     */
-	public void receiveImage(byte[] compressedImage) throws Exception {	
+    public void receiveImage(byte[] compressedImage) throws Exception {	 	
 		int count;
 		int x;
 		int y;
@@ -151,20 +149,20 @@ public class ClientModel implements Model {
 			x++;
 			count++;
 		}
-		this.clientView.displayImage(reconstructed);
+		this.serverView.displayImage(reconstructed);
 		numPictures++;
 	}
 	
-	public void setView(JFrame clientView) {
-		this.clientView=(DisplayView) clientView;
+    public void setView(JFrame serverView) {
+		this.serverView=(DisplayView) serverView;
 	}
-	
+    
 	public void getPicture(Webcam webcam) {
 		this.webcam = webcam;
 		this.takePictureThread = new Thread(new TakePictureThread());
-		this.clientProcessPictureThread = new Thread(new ClientProcessPictureThread());
+		this.serverProcessPictureThread = new Thread(new ServerProcessPictureThread());
 		this.takePictureThread.start();
-		this.clientProcessPictureThread.start();
+		this.serverProcessPictureThread.start();
 	}
 	
 }
