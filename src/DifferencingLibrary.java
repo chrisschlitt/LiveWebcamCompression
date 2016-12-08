@@ -2,13 +2,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 public class DifferencingLibrary {
 	
 	public static Diff getDiff(byte[] a, byte[] b){
 		long startTime = System.currentTimeMillis();
-		HashMap<Integer, Byte> diff = new HashMap<Integer, Byte>();
+		// HashMap<Integer, Byte> diff = new HashMap<Integer, Byte>();
+		LinkedList<Integer> tmpIndex = new LinkedList<Integer>();
+		LinkedList<Byte> tmpValue = new LinkedList<Byte>();
+		
 		int i = 0;
 		int j = 0;
 		int smallerLength = Math.min(a.length, b.length);
@@ -28,18 +32,34 @@ public class DifferencingLibrary {
 				continue;
 			} else {
 				// System.out.println("Found a difference at " + j + ", used to be: " + a[i] + " but now is " + b[j]);
-				diff.put(j, b[j]);
+				// diff.put(j, b[j]);
+				tmpIndex.add(j);
+				tmpValue.add(b[j]);
 				i++;
 				j++;
 			}
 		}
 		if(smaller == 0){
 			while(j < length){
-				diff.put(j, b[j]);
+				tmpIndex.add(j);
+				tmpValue.add(b[j]);
 				j++;
 			}
 		}
-		Diff result = new Diff(diff, length);
+		
+		Iterator<Integer> itrIndex = tmpIndex.iterator();
+		Iterator<Byte> itrValue = tmpValue.iterator();
+		Integer[] diffIndex = new Integer[tmpIndex.size()];
+		Byte[] diffValue = new Byte[tmpIndex.size()];
+		int l = 0;
+		while(itrIndex.hasNext()){
+			diffIndex[l] = itrIndex.next();
+			diffValue[l] = itrValue.next();
+			l++;
+		}
+		
+		
+		Diff result = new Diff(diffIndex, diffValue, length);
 		System.out.println("Time to build diff: " + (System.currentTimeMillis() - startTime));
 		return result;
 		
@@ -50,9 +70,11 @@ public class DifferencingLibrary {
 		byte[] b = new byte[diff.length];
 		int i = 0;
 		// int smallerLength = Math.min(a, b);
+		int diffIndexValue = 0;
 		while(i < diff.length){
-			if(diff.diff.containsKey(i)){
-				b[i] = diff.diff.get(i);
+			if(diff.diffIndex[diffIndexValue] == i){
+				b[i] = diff.diffValue[diffIndexValue];
+				diffIndexValue++;
 			} else {
 				b[i] = a[i];
 			}
@@ -85,10 +107,10 @@ public class DifferencingLibrary {
 		System.out.println("Actual length: " + b.length);
 		
 		
-		System.out.println("Index Size: " + diff.diff.size());
+		System.out.println("Index Size: " + diff.length);
         ByteArrayOutputStream baos=new ByteArrayOutputStream();
         ObjectOutputStream oos=new ObjectOutputStream(baos);
-        oos.writeObject(diff.diff);
+        oos.writeObject(diff);
         oos.close();
         System.out.println("Data Size: " + baos.size());
         System.out.println("As opposed to: " + b.length);
