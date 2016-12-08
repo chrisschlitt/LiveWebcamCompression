@@ -498,7 +498,7 @@ public class Connection {
                 	// System.out.println("Ready to receive stream object");
                     // Receive the image
                 	// long startTime = System.currentTimeMillis();
-                	
+                	/*
                 	byte[] receivedImage;
                 	StreamData streamData = (StreamData)Connection.this.inputStream.readObject();
                 	byte[] data = (byte[])streamData.data;
@@ -515,8 +515,8 @@ public class Connection {
                 	// byte[] data = (byte[])Connection.this.inputStream.readObject();
                 	// Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
                     
-                	
-                    this.receivingModel.receiveImage(receivedImage);
+                	*/
+                    this.receivingModel.receiveImage((byte[])Connection.this.inputStream.readObject());
                 }
                 System.out.println("Stopped Streaming");
             } catch(Exception e){
@@ -582,6 +582,7 @@ public class Connection {
             }
             
             */
+            /*
             StreamData streamData;
             if(this.previousSent == null){
             	this.previousSent = data;
@@ -599,11 +600,11 @@ public class Connection {
 
 
             }
-            
+            */
             
             // Write the object to the stream
             try {
-                this.outputStream.writeObject(streamData);
+                this.outputStream.writeObject(data);
                 // this.bytesSent = this.bytesSent + data.length;
             } catch (IOException e) {
             	if(this.continueStreaming){
