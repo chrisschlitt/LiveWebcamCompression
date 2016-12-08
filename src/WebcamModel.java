@@ -1,21 +1,20 @@
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.imageio.ImageIO;
+import javax.swing.JFrame;
 
 import com.github.sarxos.webcam.Webcam;
 
-public class ServerModel {
+public class WebcamModel implements Model {
 	private static int numPictures=1;
-	private boolean doneStreaming = false;
+	public boolean doneStreaming = false;
 	private int compression = 2;
 	private Webcam webcam;
 	private Thread takePictureThread;
 	private Thread serverProcessPictureThread;
+	private DisplayView serverView;
 	
 	private BlockingQueue<BufferedImage> imageQueue = new LinkedBlockingQueue<BufferedImage>();
     // The connection to the server
@@ -26,31 +25,24 @@ public class ServerModel {
      */
     public void setupConnection() {
     	
-    	connection = new Connection(8888, null);
-    	
-        // Begin listening for packets
-        connection.beginPacketListening();
-        // Wait until the client connects
-        try {
-            connection.discoveryThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        // Prepare to stream data to the client
-        connection.beginStreaming();
-        while(!connection.startStreaming){
-            // Wait
-        }
+    	connection = new Connection(8888, 4555, 6987, this);
+        connection.connect();
+    }
+    
+    public void closeConnection() {
+    	this.doneStreaming();
+    	if (connection!=null) {
+    		connection.close();
+    	}
     }
     
     public void setCompression(int compression) {
     	this.compression = compression;
     }
     
-    public void setDoneStreaming(boolean doneStreaming) {
-    	this.doneStreaming=doneStreaming;
+    public void doneStreaming(){
+    	this.doneStreaming = true;
     }
-    
     
     /**
      * A wrapper method to stream a picture
@@ -60,12 +52,11 @@ public class ServerModel {
         connection.sendStreamData(compressedImage);
     }
     
-    
     public class TakePictureThread implements Runnable {
-    	private Webcam webcam = ServerModel.this.webcam;
+    	private Webcam webcam = WebcamModel.this.webcam;
     	public void run() {
     		 try {
-                 while (!ServerModel.this.doneStreaming) {
+                 while (!WebcamModel.this.doneStreaming) {
                  	BufferedImage image = webcam.getImage();
                  	
                  	if (imageQueue.size()>5){
@@ -93,18 +84,18 @@ public class ServerModel {
         @Override
         public void run() {
             try {
-                while (!ServerModel.this.doneStreaming) {
+                while (!WebcamModel.this.doneStreaming) {
                 	byte[] compressedBytes;
             		Color color;
             		int r = 0;
             		int g = 0;
             		int b = 0;
-            		BufferedImage image = ServerModel.this.imageQueue.take();
+                    BufferedImage image = ServerModel.this.imageQueue.take();
             		            		
                     RGBCompression rgbCompression = new RGBCompression(image, ServerModel.this.compression);
                     compressedBytes = rgbCompression.getCompressedImage();
-                    
-        			sendPicture(compressedBytes);
+                
+                 	sendPicture(compressedBytes);
                 }
                 
            } catch (Exception e) {
@@ -113,7 +104,39 @@ public class ServerModel {
                 
        }
     }
+    
+    public void receiveImage(byte[] compressedImage) throws Exception {	 	
+		int count;
+		int x;
+		int y;
+		int average;
+		ImageReconstruction imgReconstruction = new ImageReconstruction(compressedImage);
+		int[][] expandedImg;
+		expandedImg = imgReconstruction.getReconstructedImage();
+		count = 0; 
+		x = 0;
+		y = 0;	
+		
+		BufferedImage reconstructed = new BufferedImage(expandedImg[0].length, expandedImg.length, BufferedImage.TYPE_INT_ARGB);
+		while (count < expandedImg.length*expandedImg[0].length) {
+			if (x==expandedImg[0].length) {
+				x = 0;
+				y++;
+			}
+			
+			average = expandedImg[y][x];	
+			reconstructed.setRGB(x, y, new Color(average, average, average).getRGB());
+			x++;
+			count++;
+		}
+		this.serverView.displayImage(reconstructed);
+		numPictures++;
+	}
 	
+    public void setView(JFrame serverView) {
+		this.serverView=(DisplayView) serverView;
+	}
+    
 	public void getPicture(Webcam webcam) {
 		this.webcam = webcam;
 		this.takePictureThread = new Thread(new TakePictureThread());

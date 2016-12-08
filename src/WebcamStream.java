@@ -6,13 +6,10 @@ public class WebcamStream {
 		
 		Webcam webcam = Webcam.getDefault();
 		webcam.setViewSize(WebcamResolution.VGA.getSize());
-		MenuView menu = new MenuView();
-		ServerView serverView = new ServerView(webcam);
-		ClientView clientView = new ClientView();
-		ServerModel serverModel = new ServerModel();
-		ClientModel clientModel = new ClientModel();
-		clientModel.setClientView(clientView);
-		WebcamController controller = new WebcamController(menu, serverView, clientView, serverModel, clientModel, webcam);
-				
+		MenuView menuView = new MenuView();
+		DisplayView displayView = new DisplayView(webcam);
+		WebcamModel webcamModel = new WebcamModel();
+		webcamModel.setView(displayView);
+		WebcamController controller = new WebcamController(menuView, displayView, webcamModel, webcam);				
 	}
 }
