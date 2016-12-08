@@ -100,34 +100,10 @@ public class ServerModel {
             		int g = 0;
             		int b = 0;
             		BufferedImage image = ServerModel.this.imageQueue.take();
-            		
-        			int[] imageColors = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
-        			int count = 0; 
-        			int x = 0;
-        			int y = 0;
-        			int average = 0;
-        			int img[][] = new int[image.getHeight()][image.getWidth()];
-
-        			while (count < imageColors.length) {
-        				if (x==image.getWidth()) {
-        					x = 0;
-        					y++;
-        				}
-        				color = new Color(imageColors[count]);
-        				r = color.getRed();
-        				g = color.getGreen();
-        				b = color.getBlue();
-        				average = (r+g+b)/3;
-        				
-        				// Creating average array to be passed for compression 
-        				img[y][x] = average;
-        				
-        				x++;
-        				count++;
-        			}
-        			
-        			ImageCompression imgCompression = new ImageCompression(img,ServerModel.this.compression);
-        			compressedBytes = imgCompression.getCompressedImage();
+            		            		
+                    RGBCompression rgbCompression = new RGBCompression(image, ServerModel.this.compression);
+                    compressedBytes = rgbCompression.getCompressedImage();
+                    
         			sendPicture(compressedBytes);
                 }
                 

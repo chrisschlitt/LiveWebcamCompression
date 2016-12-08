@@ -4,12 +4,14 @@ import java.nio.IntBuffer;
 
 import Jama.Matrix;
 
-public class ImageReconstruction {
+public class ImageReconstruction implements Runnable{
 	private int[][] reconstructedImage;
 	double theta;
 	int ratio;
 	private int width;
 	private int height;
+	int[] reconstructedArray;
+	int totalSize;
 	/**
 	 * Constructor that gets a compressed image and gived out the reconstructed image
 	 * @param compressed
@@ -18,33 +20,15 @@ public class ImageReconstruction {
 		 IntBuffer intBuf = ByteBuffer.wrap(compressed)
 				     .order(ByteOrder.BIG_ENDIAN)
 				     .asIntBuffer();
-	     int[] reconstructedArray = new int[intBuf.remaining()];
+	     reconstructedArray = new int[intBuf.remaining()];
 		 intBuf.get(reconstructedArray);
 		 
-		 int totalSize = reconstructedArray.length;
+		 totalSize = reconstructedArray.length;
 		 height = reconstructedArray[totalSize-1];
 		 width = reconstructedArray[totalSize-2];
 		 theta = reconstructedArray[totalSize-3];
 		 ratio = reconstructedArray[totalSize-4];
 		 
-		 if (ratio != 1) {
-			 double[][] imgTmp = construct2rowArray(reconstructedArray);
-			 Matrix imgTmpMatrix = new Matrix(imgTmp);
-			 Matrix rotationMatrix = getRotationMatrix(theta);
-			 rotationMatrix = rotationMatrix.transpose();
-			 Matrix expandedImageMatrix = rotationMatrix.times(imgTmpMatrix);
-	
-			 double [][] expandedImageTmp = reshape(expandedImageMatrix.getArray(), width, height);
-		 
-			  double[][] expandedImage = rephaseImage(expandedImageTmp);		 
-		 
-			 reconstructedImage = convertDoubletoInt(expandedImage);
-		 	}
-		 	else {
-		 		int[][] img = new int[1][width*height];
-		 		img[0] = reconstructedArray;
-		 		reconstructedImage = reshapeInt(img, width, height);
-		 	}
 	}
 	
 	/**
@@ -198,5 +182,27 @@ public class ImageReconstruction {
 		 
 		 return  output;
 	 }
+
+	@Override
+	public void run() {
+		 if (ratio != 1) {
+			 double[][] imgTmp = construct2rowArray(reconstructedArray);
+			 Matrix imgTmpMatrix = new Matrix(imgTmp);
+			 Matrix rotationMatrix = getRotationMatrix(theta);
+			 rotationMatrix = rotationMatrix.transpose();
+			 Matrix expandedImageMatrix = rotationMatrix.times(imgTmpMatrix);
+	
+			 double [][] expandedImageTmp = reshape(expandedImageMatrix.getArray(), width, height);
+			 double[][] expandedImage = rephaseImage(expandedImageTmp);		 
+		 
+			 reconstructedImage = convertDoubletoInt(expandedImage);
+		 	}
+		 	else {
+		 		int[][] img = new int[1][width*height];
+		 		img[0] = reconstructedArray;
+		 		reconstructedImage = reshapeInt(img, width, height);
+		 	}
+		
+	}
 
 }
