@@ -9,7 +9,7 @@ import com.github.sarxos.webcam.Webcam;
 
 public class WebcamModel implements Model {
 	private static int numPictures=1;
-	private boolean doneStreaming = false;
+	public boolean doneStreaming = false;
 	private int compression = 2;
 	private Webcam webcam;
 	private Thread takePictureThread;
@@ -30,7 +30,7 @@ public class WebcamModel implements Model {
     }
     
     public void closeConnection() {
-    	this.doneStreaming = true;
+    	this.doneStreaming();
     	if (connection!=null) {
     		connection.close();
     	}
@@ -38,6 +38,10 @@ public class WebcamModel implements Model {
     
     public void setCompression(int compression) {
     	this.compression = compression;
+    }
+    
+    public void doneStreaming(){
+    	this.doneStreaming = true;
     }
     
     /**

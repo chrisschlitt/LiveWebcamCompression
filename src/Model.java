@@ -15,4 +15,6 @@ public interface Model {
 	
 	public void getPicture(Webcam webcam);
 	
+	public void doneStreaming();
+	
 }

@@ -72,27 +72,9 @@ public class Connection {
     }
     
     /**
-     * A method to handle the connection to the server
+     * A method to handle connection to the other computer
      */
-    public void connectToClient(){
-    	this.isServer = true;
-    	// Begin listening for packets
-        this.beginPacketListening();
-        // Wait until the client connects
-        try {
-            this.discoveryThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Stream setup successfully");
-
-    }
-    
-    /**
-     * A method to handle connection to the client
-     */
-    public void connectToServer(){
-    	this.isServer = false;
+    public void connect(){
     	// Begin listening for packets
         this.beginPacketListening();
         // Discover the server's IP address
@@ -114,8 +96,8 @@ public class Connection {
         // Start the end listening thread
         this.endThread.start();
         System.out.println("Stream setup successfully");
-
     }
+    
     
     /**
      * A method to get the connected computer's IP address
@@ -158,22 +140,22 @@ public class Connection {
                 DatagramSocket socket;
                 // Get local IP string
                 String localAddr = InetAddress.getLocalHost().toString().split("/")[1];
-                
+                socket = new DatagramSocket(Connection.this.packetPort, InetAddress.getByName("0.0.0.0"));
+                socket.setBroadcast(true);
                 // Continue listening
                 while(Connection.this.continueListening){
                 	// System.out.println("Ready to begin receiving a packet");
                     // Listen on specified port
-                    socket = new DatagramSocket(Connection.this.packetPort, InetAddress.getByName("0.0.0.0"));
-                    socket.setBroadcast(true);
+                    
                     
                     // System.out.println("Ready to receive another packet");
                     
                     // Receive a packet
                     byte[] received = new byte[1000];
                     DatagramPacket packet = new DatagramPacket(received, received.length);
-                    // System.out.println("Receive Packet? (" + System.currentTimeMillis() + ")");
+                    System.out.println("Receive Packet? (" + System.currentTimeMillis() + ")");
                     socket.receive(packet);
-                    // System.out.println("Packet received");
+                    System.out.println("Packet received");
                     // Get package message
                     String message = new String(packet.getData()).trim();
                     // Get package address
@@ -183,11 +165,15 @@ public class Connection {
                     } catch (Exception e){
                         fromAddr = packet.getAddress().getHostAddress().toString();
                     }
-                    // System.out.println("Received Packet: " + message);
+                    System.out.println("Received Packet: " + message);
                     // Route the message
                     if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
                     	if(!receivedDiscovery){
                     		receivedDiscovery = true;
+                    		Connection.this.isServer = true;
+                    		int tmpPort = Connection.this.incomingPort;
+                    		Connection.this.incomingPort = Connection.this.outgoingPort;
+                    		Connection.this.outgoingPort = tmpPort;
                     		System.out.println("Connected to Client");
                             // Received discovery message
                             // Set the client IP
@@ -201,6 +187,9 @@ public class Connection {
                     } else if (message.equals("DISCOVERY_RESPONSE") && !fromAddr.equals(localAddr)) {
                     	if(!receivedDiscovery){
                     		receivedDiscovery = true;
+                    		Connection.this.isServer = false;
+                    		
+                    		
                     		System.out.println("Connected to Server");
                             // Received discovery response
                             // Set the connected computer (client) IP
@@ -224,9 +213,10 @@ public class Connection {
                     	}
                     }
                     
-                    // Close the socket
-                    socket.close();
+                    
                 }
+             // Close the socket
+                socket.close();
                 // System.out.println("No more listening");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -255,7 +245,7 @@ public class Connection {
      * @return success: boolean - Success flag
      */
     public boolean sendPacketData(byte[] data, InetAddress address) throws IOException{
-    	// System.out.println("Sending a packet");
+    	System.out.println("Sending a packet");
     	for(int i=0; i < 4; i++){
     		// Initiate the DatagramSocket
             DatagramSocket socket;
@@ -316,12 +306,15 @@ public class Connection {
                     add = -1;
                 }
                 
-                // Create the socket
-                socket = new DatagramSocket();
-                socket.setBroadcast(true);
+                
                 
                 // Loop through the local subnet
-                for(int j=0; j<255; j++){
+                for(int j=0; j<100; j++){
+                	
+                	// Create the socket
+                    socket = new DatagramSocket();
+                    socket.setBroadcast(true);
+                    
                     // Check addresses on specified subnet
                     tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
                     
@@ -329,6 +322,9 @@ public class Connection {
                     if(localAddr.trim().equals((ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j).trim())){
                         continue;
                     }
+                    
+                    // System.out.println("Sending a DISCOVERY message to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j + "   |   Mine is: " + localAddr);
+                    
                     requestPacket = new DatagramPacket(request, request.length, tempAddr, Connection.this.packetPort);
                     // System.out.println("Sending a discovery packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
                     
@@ -339,10 +335,11 @@ public class Connection {
                         // If the server has been found, break the loop
                         break;
                     }
+                 // Close the socket
+                    socket.close();
                 }
                 
-                // Close the socket
-                socket.close();
+                
                 
                 // Restore ipthree counter for math
                 ipthree = ipthree + (255 * add);
@@ -387,7 +384,7 @@ public class Connection {
      *
      */
     public void discoverIP() throws Exception{
-    	int numThreads = 4;
+    	int numThreads = 1;
     	int threadNumber = 0;
     	Thread discoverThreads[] = new Thread[numThreads];
     	// System.out.println("Beginning discovery");
@@ -432,18 +429,18 @@ public class Connection {
         		e.printStackTrace();
         		
         	}
-        	// System.out.println("Here");
+        	System.out.println("Here");
             // Send the stream ready packet to the server
             byte[] data = "STREAMREADY".getBytes();
-            // System.out.println("Sending: " + data);
+            System.out.println("Sending: STREAMREADY (" + System.currentTimeMillis() + ")");
             Connection.this.sendPacketData(data, Connection.this.connectedComputerIP);
-            // System.out.println("Here1");
+            System.out.println("Here1");
             // Accept the incoming stream (break until accepted)
             Connection.this.incomingSocket = Connection.this.serverSocket.accept();
-            // System.out.println("Here2");
+            System.out.println("Here2");
             // Create the input stream
             Connection.this.inputStream = new ObjectInputStream(Connection.this.incomingSocket.getInputStream());
-            // System.out.println("Finished preparing to receive stream");
+            System.out.println("Finished preparing to receive stream");
             return true;
         }
         
@@ -525,15 +522,19 @@ public class Connection {
      * @param o: Object - The data to stream
      */
     public void sendStreamData(Object o){
-    	// System.out.println("Sending a stream object");
-        // Cast the object as a byte array
-        byte[] data = (byte[])o;
-        // Write the object to the stream
-        try {
-            this.outputStream.writeObject(data);
-        } catch (IOException e) {
-            System.out.println("BROKEN PIPE");
-        }
+    	if(this.continueStreaming){
+    		// System.out.println("Sending a stream object");
+            // Cast the object as a byte array
+            byte[] data = (byte[])o;
+            // Write the object to the stream
+            try {
+                this.outputStream.writeObject(data);
+            } catch (IOException e) {
+                System.out.println("BROKEN PIPE");
+                this.close();
+            }
+    	}
+    	
     }
     
     public class EndThread implements Runnable {
@@ -574,16 +575,13 @@ public class Connection {
                     } catch (Exception e){
                         fromAddr = packet.getAddress().getHostAddress().toString();
                     }
-                    // System.out.println("Received Packet: " + message);
+                    System.out.println("Received Packet: " + message);
                     // Route the message
                     if(message.equals("END") && !fromAddr.equals(localAddr)){
                     	if(!receivedEnd){
                     		receivedEnd = true;
-                    		Connection.this.outputStream.close();
-                    		Connection.this.inputStream.close();
-                    		Connection.this.serverSocket.close();
-                    		Connection.this.incomingSocket.close();
-                    		Connection.this.streamingSocket.close();
+                    		Connection.this.receivingModel.doneStreaming();
+                    		Connection.this.exit();
                     	}
                     }
                 }
@@ -617,6 +615,13 @@ public class Connection {
 			this.streamingSocket.close();
 		} catch (IOException e) {
 		}
+		try {
+			this.endThread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// System.exit(0);
     }
     
     /**
@@ -626,8 +631,10 @@ public class Connection {
     	byte[] data = "END".getBytes();
     	try {
 			this.sendPacketData(data, this.connectedComputerIP);
+	    	System.out.println("Send END Packet");
 		} catch (IOException e) {
 		}
     	this.exit();
+    	System.out.println("Stream Ended");
     }
 }

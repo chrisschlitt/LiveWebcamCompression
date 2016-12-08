@@ -56,9 +56,8 @@ public class WebcamController {
 			menu.setVisible(false);
 			displayView.addSelectionListener(new CompressionSelect());
 			displayView.addCloseListener(new CloseAction());
-			webcamModel.setupConnection();
 			webcamModel.getPicture(webcam);
-			
+			webcamModel.setupConnection();
 		}
 	}
 
