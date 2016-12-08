@@ -1,11 +1,11 @@
-import java.io.Serializable;
 
-public class Diff implements Serializable {
+
+public class Diff {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 8612089235662456771L;
-	// HashMap<Integer, Byte> diff;
+	
+// HashMap<Integer, Byte> diff;
 	Integer[] diffIndex;
 	Byte[] diffValue;
 	Integer length;

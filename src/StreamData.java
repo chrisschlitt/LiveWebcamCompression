@@ -1,10 +1,7 @@
-import java.io.Serializable;
-
-public class StreamData implements Serializable {
+public class StreamData {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -4537244685787412499L;
 	/**
 	 * 
 	 */
