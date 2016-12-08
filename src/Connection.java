@@ -509,7 +509,8 @@ public class Connection {
                 	// byte[] data = (byte[])Connection.this.inputStream.readObject();
                 	// Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
                     */
-                    this.receivingModel.receiveImage((byte[])Connection.this.inputStream.readObject());
+                	
+                    this.receivingModel.receiveImage(DifferencingLibrary.decompress((byte[])Connection.this.inputStream.readObject()));
                 }
                 System.out.println("Stopped Streaming");
             } catch(Exception e){
@@ -583,7 +584,7 @@ public class Connection {
             
             // Write the object to the stream
             try {
-                this.outputStream.writeObject(data);
+                this.outputStream.writeObject(DifferencingLibrary.compress(data));
                 // this.bytesSent = this.bytesSent + data.length;
             } catch (IOException e) {
             	if(this.continueStreaming){
