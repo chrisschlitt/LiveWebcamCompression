@@ -608,6 +608,8 @@ public class Connection {
      * A method to close the connections
      */
     public void exit(){
+    	System.out.println("Sent: " + this.getSent() + " bytes");
+    	System.out.println("Received: " + this.getReceived() + " bytes");
     	try {
 			this.outputStream.close();
 		} catch (IOException e4) {
