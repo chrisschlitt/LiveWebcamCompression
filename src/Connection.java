@@ -554,8 +554,10 @@ public class Connection {
             StreamData streamData;
             if(this.previousSent == null){
             	this.previousSent = data;
+            	System.out.println("Sending original data");
             	streamData = new StreamData(false, data);
             } else {
+            	System.out.println("Sending diff data");
             	streamData = new StreamData(false, DifferencingLibrary.getDiff(this.previousSent, data));
             }
             
@@ -566,7 +568,7 @@ public class Connection {
                 // this.bytesSent = this.bytesSent + data.length;
             } catch (IOException e) {
                 System.out.println("BROKEN PIPE");
-                this.close();
+                // this.close();
             }
     	}
     	
