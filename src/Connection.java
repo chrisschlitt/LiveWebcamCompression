@@ -317,15 +317,15 @@ public class Connection {
                     add = -1;
                 }
                 
+                // Create the socket
+                socket = new DatagramSocket();
+                socket.setBroadcast(true);
                 
                 
                 // Loop through the local subnet
-                for(int j=0; j<100; j++){
+                for(int j=0; j<255; j++){
                 	
-                	// Create the socket
-                    socket = new DatagramSocket();
-                    socket.setBroadcast(true);
-                    
+                	
                     // Check addresses on specified subnet
                     tempAddr = InetAddress.getByName(ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
                     
@@ -346,10 +346,10 @@ public class Connection {
                         // If the server has been found, break the loop
                         break;
                     }
-                 // Close the socket
-                    socket.close();
+                 
                 }
-                
+                // Close the socket
+                socket.close();
                 
                 
                 // Restore ipthree counter for math
