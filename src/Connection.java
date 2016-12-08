@@ -57,6 +57,10 @@ public class Connection {
     // Data Received
     public long bytesReceived;
     
+    // Differencing Library
+    public byte[] previousSent;
+    public byte[] previousReceived;
+    
     
     /**
      * Constructor
@@ -481,9 +485,17 @@ public class Connection {
                 while(Connection.this.continueStreaming){
                 	// System.out.println("Ready to receive stream object");
                     // Receive the image
-                	byte[] data = (byte[])Connection.this.inputStream.readObject();
-                	Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
-                    this.receivingModel.receiveImage(data);
+                	byte[] receivedImage;
+                	StreamData streamData = (StreamData)Connection.this.inputStream.readObject();
+                	if(streamData.isDiff){
+                		receivedImage = DifferencingLibrary.rebuild((Diff)streamData.data, Connection.this.previousReceived);
+                	} else {
+                		Connection.this.previousReceived = (byte[])streamData.data;
+                		receivedImage = (byte[])streamData.data;
+                	}
+                	// byte[] data = (byte[])Connection.this.inputStream.readObject();
+                	// Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
+                    this.receivingModel.receiveImage(receivedImage);
                 }
                 System.out.println("Stopped Streaming");
             } catch(Exception e){
@@ -538,10 +550,20 @@ public class Connection {
     		// System.out.println("Sending a stream object");
             // Cast the object as a byte array
             byte[] data = (byte[])o;
+            
+            StreamData streamData;
+            if(this.previousSent == null){
+            	this.previousSent = data;
+            	streamData = new StreamData(false, data);
+            } else {
+            	streamData = new StreamData(false, DifferencingLibrary.getDiff(this.previousSent, data));
+            }
+            
+            
             // Write the object to the stream
             try {
-                this.outputStream.writeObject(data);
-                this.bytesSent = this.bytesSent + data.length;
+                this.outputStream.writeObject(streamData);
+                // this.bytesSent = this.bytesSent + data.length;
             } catch (IOException e) {
                 System.out.println("BROKEN PIPE");
                 this.close();
