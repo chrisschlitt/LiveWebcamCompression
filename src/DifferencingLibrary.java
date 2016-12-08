@@ -7,6 +7,7 @@ import java.util.HashMap;
 public class DifferencingLibrary {
 	
 	public static Diff getDiff(byte[] a, byte[] b){
+		long startTime = System.currentTimeMillis();
 		HashMap<Integer, Byte> diff = new HashMap<Integer, Byte>();
 		int i = 0;
 		int j = 0;
@@ -39,11 +40,13 @@ public class DifferencingLibrary {
 			}
 		}
 		Diff result = new Diff(diff, length);
+		System.out.println("Time to build diff: " + (System.currentTimeMillis() - startTime));
 		return result;
 		
 	}
 	
 	public static byte[] rebuild(Diff diff, byte[] a){
+		long startTime = System.currentTimeMillis();
 		byte[] b = new byte[diff.length];
 		int i = 0;
 		// int smallerLength = Math.min(a, b);
@@ -55,6 +58,7 @@ public class DifferencingLibrary {
 			}
 			i++;
 		}
+		System.out.println("Time to rebuild byte array: " + (System.currentTimeMillis() - startTime));
 		
 		return b;
 	}

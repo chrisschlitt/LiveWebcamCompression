@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,6 +8,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 /**
  * Connection
@@ -344,7 +346,14 @@ public class Connection {
                     // System.out.println("Sending a discovery packet to: " + ipAddress[0] + "." + ipAddress[1] + "." + ipthree + "." + j);
                     
                     // Send the packet
-                    socket.send(requestPacket);
+                    try {
+                    	socket.send(requestPacket);
+                    } catch (Exception e){
+                    	socket = new DatagramSocket();
+                        socket.setBroadcast(true);
+                    	socket.send(requestPacket);
+                    }
+                    
                     // Check if the discovery response packet has been received
                     if(Connection.this.connectedComputerIP != null){
                         // If the server has been found, break the loop
@@ -558,7 +567,35 @@ public class Connection {
             	streamData = new StreamData(false, data);
             } else {
             	// System.out.println("Sending diff data");
-            	streamData = new StreamData(false, DifferencingLibrary.getDiff(this.previousSent, data));
+            	Diff diff = DifferencingLibrary.getDiff(this.previousSent, data);
+            	streamData = new StreamData(true, diff);
+            	
+            	
+            	ByteArrayOutputStream baos=new ByteArrayOutputStream();
+                ObjectOutputStream oos;
+                
+                try {
+                	oos = new ObjectOutputStream(baos);
+					oos.writeObject(diff);
+					oos.close();
+					System.out.println("Size of diff: " + baos.size());
+	            	System.out.println("Size of original: " + data.length);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					System.out.println("Couldn't calculate size");
+				}
+            	
+            	
+            	
+
+            	
+            	/*
+            	if(Arrays.equals(data, DifferencingLibrary.rebuild(diff, this.previousSent))){
+            		System.out.println("Differencing Success");
+            	} else {
+            		System.out.println("Differencing failure");
+            	}
+            	*/
             }
             
             
