@@ -1,15 +1,14 @@
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 public class DifferencingLibrary {
 	
 	public static Diff getDiff(byte[] a, byte[] b){
-		long startTime = System.currentTimeMillis();
-		// HashMap<Integer, Byte> diff = new HashMap<Integer, Byte>();
 		LinkedList<Integer> tmpIndex = new LinkedList<Integer>();
 		LinkedList<Byte> tmpValue = new LinkedList<Byte>();
 		
@@ -21,18 +20,13 @@ public class DifferencingLibrary {
 		if(a.length < b.length){
 			smaller = 0;
 		}
-		// System.out.println("a.length = " + a.length);
-		// System.out.println("b.length = " + b.length);
+		
 		while(j < (smallerLength)){
-			// System.out.println("Testing i = " + i);
-			// System.out.println("Testing j = " + j);
 			if(a[i] == b[j]){
 				i++;
 				j++;
 				continue;
 			} else {
-				// System.out.println("Found a difference at " + j + ", used to be: " + a[i] + " but now is " + b[j]);
-				// diff.put(j, b[j]);
 				tmpIndex.add(j);
 				tmpValue.add(b[j]);
 				i++;
@@ -58,18 +52,14 @@ public class DifferencingLibrary {
 			l++;
 		}
 		
-		
 		Diff result = new Diff(diffIndex, diffValue, length);
-		System.out.println("Time to build diff: " + (System.currentTimeMillis() - startTime));
 		return result;
 		
 	}
 	
 	public static byte[] rebuild(Diff diff, byte[] a){
-		long startTime = System.currentTimeMillis();
 		byte[] b = new byte[diff.length];
 		int i = 0;
-		// int smallerLength = Math.min(a, b);
 		int diffIndexValue = 0;
 		while(i < diff.length){
 			if(diff.diffIndex[diffIndexValue] == i){
@@ -80,42 +70,61 @@ public class DifferencingLibrary {
 			}
 			i++;
 		}
-		System.out.println("Time to rebuild byte array: " + (System.currentTimeMillis() - startTime));
 		
 		return b;
 	}
+	
+	public static byte[] compress(byte[] data) throws IOException {  
+		   Deflater deflater = new Deflater();  
+		   deflater.setInput(data);  
+		   ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);   
+		   deflater.finish();  
+		   byte[] buffer = new byte[1024];   
+		   while (!deflater.finished()) {  
+		    int count = deflater.deflate(buffer); // returns the generated code... index  
+		    outputStream.write(buffer, 0, count);   
+		   }  
+		   outputStream.close();  
+		   byte[] output = outputStream.toByteArray();  
+		   // System.out.println("Original: " + data.length + " bytes");  
+		   // System.out.println("Compressed: " + output.length + " bytes");  
+		   return output;  
+	} 
+	
+	public static byte[] decompress(byte[] data) throws IOException, DataFormatException {  
+		   Inflater inflater = new Inflater();   
+		   inflater.setInput(data);  
+		   ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);  
+		   byte[] buffer = new byte[1024];  
+		   while (!inflater.finished()) {  
+		    int count = inflater.inflate(buffer);  
+		    outputStream.write(buffer, 0, count);  
+		   }  
+		   outputStream.close();  
+		   byte[] output = outputStream.toByteArray();  
+		   return output;  
+	}  
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		byte[] a = "CHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREAT!".getBytes();
-		byte[] b = "CHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREATCHRISISGREAT?".getBytes();
-		System.out.println("Getting difference");
+		
+		byte[] a = "CHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRISCHRIS!".getBytes();
+		
+		byte[] b = new byte[600000];
+		for(int i = 0; i<600000; i++){
+			b[i] = ((char)i + "").getBytes()[0];
+		}
+		
+		/*
+		byte[] b = "CHRIS?".getBytes();
+
 		Diff diff = DifferencingLibrary.getDiff(a, b);
-		System.out.println("Rebuilding");
 		
 		byte[] c = DifferencingLibrary.rebuild(diff, a);
 		boolean same = Arrays.equals(b, c);
-		int n = 0;
-		while(n < b.length){
-			if(b[n] != c[n]){
-				System.out.println(b[n] + " != " + c[n] + " at index: " + n);
-			}
-			n++;
-		}
 		System.out.println("The result is rebuilt successfully: " + same);
-		System.out.println("Computed length: " + c.length);
-		System.out.println("Actual length: " + b.length);
-		
-		
-		System.out.println("Index Size: " + diff.length);
-        ByteArrayOutputStream baos=new ByteArrayOutputStream();
-        ObjectOutputStream oos=new ObjectOutputStream(baos);
-        oos.writeObject(diff);
-        oos.close();
-        System.out.println("Data Size: " + baos.size());
-        System.out.println("As opposed to: " + b.length);
-		
-		
+		*/
+		DifferencingLibrary.compress(b);
 	}
 
 }
