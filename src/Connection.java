@@ -52,7 +52,10 @@ public class Connection {
     public Model receivingModel;
     // Server indicator
     public boolean isServer;
-    
+    // Data Sent
+    public long bytesSent;
+    // Data Received
+    public long bytesReceived;
     
     
     /**
@@ -118,6 +121,14 @@ public class Connection {
             return false;
         }
         return true;
+    }
+    
+    public long getSent(){
+    	return this.bytesSent;
+    }
+    
+    public long getReceived(){
+    	return this.bytesReceived;
     }
     
     /**
@@ -470,8 +481,9 @@ public class Connection {
                 while(Connection.this.continueStreaming){
                 	// System.out.println("Ready to receive stream object");
                     // Receive the image
-                    this.receivingModel.receiveImage((byte[])Connection.this.inputStream.readObject());
-
+                	byte[] data = (byte[])Connection.this.inputStream.readObject();
+                	Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
+                    this.receivingModel.receiveImage(data);
                 }
                 System.out.println("Stopped Streaming");
             } catch(Exception e){
@@ -529,6 +541,7 @@ public class Connection {
             // Write the object to the stream
             try {
                 this.outputStream.writeObject(data);
+                this.bytesSent = this.bytesSent + data.length;
             } catch (IOException e) {
                 System.out.println("BROKEN PIPE");
                 this.close();
