@@ -492,9 +492,10 @@ public class Connection {
                 // While the stream is open
                 // System.out.println("Ready to receive strem");
                 while(Connection.this.continueStreaming){
-                	System.out.println("Ready to receive stream object");
+                	// System.out.println("Ready to receive stream object");
                     // Receive the image
-                	long startTime = System.currentTimeMillis();
+                	// long startTime = System.currentTimeMillis();
+                	/*
                 	byte[] receivedImage;
                 	StreamData streamData = (StreamData)Connection.this.inputStream.readObject();
                 	System.out.println("Received object");
@@ -507,7 +508,8 @@ public class Connection {
                 	System.out.println("Total Time to decompress: " + (System.currentTimeMillis() - startTime));
                 	// byte[] data = (byte[])Connection.this.inputStream.readObject();
                 	// Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
-                    this.receivingModel.receiveImage(receivedImage);
+                    */
+                    this.receivingModel.receiveImage((byte[])Connection.this.inputStream.readObject());
                 }
                 System.out.println("Stopped Streaming");
             } catch(Exception e){
@@ -559,11 +561,11 @@ public class Connection {
      */
     public void sendStreamData(Object o){
     	if(this.continueStreaming){
-    		long startTime = System.currentTimeMillis();
+    		// long startTime = System.currentTimeMillis();
     		// System.out.println("Sending a stream object");
             // Cast the object as a byte array
             byte[] data = (byte[])o;
-            
+            /*
             StreamData streamData;
             if(this.previousSent == null){
             	this.previousSent = data;
@@ -574,39 +576,14 @@ public class Connection {
             	Diff diff = DifferencingLibrary.getDiff(this.previousSent, data);
             	streamData = new StreamData(true, diff);
             	System.out.println("Time taken to send: " + (System.currentTimeMillis() - startTime));
-            	/*
-            	ByteArrayOutputStream baos=new ByteArrayOutputStream();
-                ObjectOutputStream oos;
-                
-                
-                try {
-                	oos = new ObjectOutputStream(baos);
-					oos.writeObject(diff);
-					oos.close();
-					System.out.println("Size of diff: " + baos.size());
-	            	System.out.println("Size of original: " + data.length);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					System.out.println("Couldn't calculate size");
-				}
-            	*/
-            	
-            	
 
-            	
-            	/*
-            	if(Arrays.equals(data, DifferencingLibrary.rebuild(diff, this.previousSent))){
-            		System.out.println("Differencing Success");
-            	} else {
-            		System.out.println("Differencing failure");
-            	}
-            	*/
+
             }
-            
+            */
             
             // Write the object to the stream
             try {
-                this.outputStream.writeObject(streamData);
+                this.outputStream.writeObject(data);
                 // this.bytesSent = this.bytesSent + data.length;
             } catch (IOException e) {
             	if(this.continueStreaming){
