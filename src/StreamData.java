@@ -4,7 +4,10 @@ public class StreamData implements Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -4537244685787412499L;
+	/**
+	 * 
+	 */
 	public Boolean isDiff;
 	public Object data;
 	
