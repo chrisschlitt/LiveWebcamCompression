@@ -1,4 +1,5 @@
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,8 +8,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Arrays;
 
 /**
  * Connection
@@ -174,9 +173,9 @@ public class Connection {
                     // Receive a packet
                     byte[] received = new byte[1000];
                     DatagramPacket packet = new DatagramPacket(received, received.length);
-                    System.out.println("Receive Packet? (" + System.currentTimeMillis() + ")");
+                    // System.out.println("Receive Packet? (" + System.currentTimeMillis() + ")");
                     socket.receive(packet);
-                    System.out.println("Packet received");
+                    // System.out.println("Packet received");
                     // Get package message
                     String message = new String(packet.getData()).trim();
                     // Get package address
@@ -186,7 +185,7 @@ public class Connection {
                     } catch (Exception e){
                         fromAddr = packet.getAddress().getHostAddress().toString();
                     }
-                    System.out.println("Received Packet: " + message);
+                    // System.out.println("Received Packet: " + message);
                     // Route the message
                     if(message.equals("DISCOVERY") && !fromAddr.equals(localAddr)){
                     	if(!receivedDiscovery){
@@ -266,7 +265,7 @@ public class Connection {
      * @return success: boolean - Success flag
      */
     public boolean sendPacketData(byte[] data, InetAddress address) throws IOException{
-    	System.out.println("Sending a packet");
+    	// System.out.println("Sending a packet");
     	for(int i=0; i < 4; i++){
     		// Initiate the DatagramSocket
             DatagramSocket socket;
@@ -457,18 +456,18 @@ public class Connection {
         		e.printStackTrace();
         		
         	}
-        	System.out.println("Here");
+        	// System.out.println("Here");
             // Send the stream ready packet to the server
             byte[] data = "STREAMREADY".getBytes();
-            System.out.println("Sending: STREAMREADY (" + System.currentTimeMillis() + ")");
+            // System.out.println("Sending: STREAMREADY (" + System.currentTimeMillis() + ")");
             Connection.this.sendPacketData(data, Connection.this.connectedComputerIP);
-            System.out.println("Here1");
+            // System.out.println("Here1");
             // Accept the incoming stream (break until accepted)
             Connection.this.incomingSocket = Connection.this.serverSocket.accept();
-            System.out.println("Here2");
+            // System.out.println("Here2");
             // Create the input stream
             Connection.this.inputStream = new ObjectInputStream(Connection.this.incomingSocket.getInputStream());
-            System.out.println("Finished preparing to receive stream");
+            // System.out.println("Finished preparing to receive stream");
             return true;
         }
         
@@ -573,7 +572,16 @@ public class Connection {
     		// System.out.println("Sending a stream object");
             // Cast the object as a byte array
             byte[] data = (byte[])o;
+            /*
+            try{
+            	FileOutputStream fos = new FileOutputStream("test.txt");
+                fos.write(data);
+                fos.close();
+            } catch(Exception e){
+            	
+            }
             
+            */
             StreamData streamData;
             if(this.previousSent == null){
             	this.previousSent = data;
