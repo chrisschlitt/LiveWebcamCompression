@@ -1,6 +1,10 @@
 import java.io.Serializable;
 
-public class Diff {
+public class Diff implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -9083838097019599265L;
 	byte[] diffImage;
 	Integer length;
 	
