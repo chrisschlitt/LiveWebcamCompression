@@ -492,11 +492,12 @@ public class Connection {
                 // While the stream is open
                 // System.out.println("Ready to receive strem");
                 while(Connection.this.continueStreaming){
-                	// System.out.println("Ready to receive stream object");
+                	System.out.println("Ready to receive stream object");
                     // Receive the image
                 	long startTime = System.currentTimeMillis();
                 	byte[] receivedImage;
                 	StreamData streamData = (StreamData)Connection.this.inputStream.readObject();
+                	System.out.println("Received object");
                 	if(streamData.isDiff){
                 		receivedImage = DifferencingLibrary.rebuild((Diff)streamData.data, Connection.this.previousReceived);
                 	} else {
