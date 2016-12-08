@@ -494,6 +494,7 @@ public class Connection {
                 while(Connection.this.continueStreaming){
                 	// System.out.println("Ready to receive stream object");
                     // Receive the image
+                	long startTime = System.currentTimeMillis();
                 	byte[] receivedImage;
                 	StreamData streamData = (StreamData)Connection.this.inputStream.readObject();
                 	if(streamData.isDiff){
@@ -502,6 +503,7 @@ public class Connection {
                 		Connection.this.previousReceived = (byte[])streamData.data;
                 		receivedImage = (byte[])streamData.data;
                 	}
+                	System.out.println("Total Time to decompress: " + (System.currentTimeMillis() - startTime));
                 	// byte[] data = (byte[])Connection.this.inputStream.readObject();
                 	// Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
                     this.receivingModel.receiveImage(receivedImage);
@@ -556,6 +558,7 @@ public class Connection {
      */
     public void sendStreamData(Object o){
     	if(this.continueStreaming){
+    		long startTime = System.currentTimeMillis();
     		// System.out.println("Sending a stream object");
             // Cast the object as a byte array
             byte[] data = (byte[])o;
@@ -569,10 +572,11 @@ public class Connection {
             	// System.out.println("Sending diff data");
             	Diff diff = DifferencingLibrary.getDiff(this.previousSent, data);
             	streamData = new StreamData(true, diff);
-            	
-            	
+            	System.out.println("Time taken to send: " + (System.currentTimeMillis() - startTime));
+            	/*
             	ByteArrayOutputStream baos=new ByteArrayOutputStream();
                 ObjectOutputStream oos;
+                
                 
                 try {
                 	oos = new ObjectOutputStream(baos);
@@ -584,7 +588,7 @@ public class Connection {
 					// TODO Auto-generated catch block
 					System.out.println("Couldn't calculate size");
 				}
-            	
+            	*/
             	
             	
 
