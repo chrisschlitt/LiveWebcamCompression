@@ -29,14 +29,14 @@ public class ServerModel implements Model {
         connection.connectToClient();
     }
     
+    public void closeConnection() {
+    	this.doneStreaming = true;
+    	connection.close();
+    }
+    
     public void setCompression(int compression) {
     	this.compression = compression;
     }
-    
-    public void setDoneStreaming(boolean doneStreaming) {
-    	this.doneStreaming=doneStreaming;
-    }
-    
     
     /**
      * A wrapper method to stream a picture

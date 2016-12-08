@@ -31,10 +31,10 @@ public class ClientModel implements Model {
         connection.connectToServer();
     }
     
-    public void setDoneStreaming(boolean doneStreaming) {
-    	this.doneStreaming=doneStreaming;
+    public void closeConnection() {
+    	this.doneStreaming = true;
+    	connection.close();
     }
-    
     
     /**
      * A wrapper method to stream a picture

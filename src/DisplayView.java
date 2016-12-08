@@ -1,10 +1,12 @@
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -20,6 +22,8 @@ public class DisplayView extends JFrame {
 	JRadioButton noCompressionButton = new JRadioButton("None");
 	JRadioButton quarterCompressionButton = new JRadioButton("1/4");
 	JRadioButton halfCompressionButton = new JRadioButton("1/2");
+	JButton endButton = new JButton("End");
+	JPanel endPanel = new JPanel();
 	
 	public DisplayView(Webcam webcam) {
 
@@ -46,14 +50,18 @@ public class DisplayView extends JFrame {
 		buttonGroup.add(quarterCompressionButton);
 		buttonGroup.add(noCompressionButton);
 		JPanel radioPanel = new JPanel();
-		radioPanel.setLayout(new BorderLayout());
+		radioPanel.setLayout(new GridLayout(0,2));
 		
 		JPanel buttons = new JPanel();
 		buttons.add(halfCompressionButton);
 		buttons.add(quarterCompressionButton);
 		buttons.add(noCompressionButton);
 		halfCompressionButton.setSelected(true);
+		
 		radioPanel.add(buttons);
+		endButton.setPreferredSize(new Dimension(100,50));
+		endPanel.add(endButton);
+		radioPanel.add(endPanel);
 		
 		
 		JLabel buttonLabel = new JLabel("Compression Level", JLabel.CENTER);
@@ -73,6 +81,9 @@ public class DisplayView extends JFrame {
 		this.pack();
 	}
 	
+	public void addCloseListener(ActionListener closeListener) {
+		endButton.addActionListener(closeListener);
+	}
 	
 	public void addSelectionListener(ActionListener selectionButtonListener) {
         

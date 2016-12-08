@@ -5,8 +5,8 @@ import java.awt.event.ActionListener;
 
 public class MenuView extends JFrame {
 	
-	JButton serverButton = new JButton("Server");
-	JButton clientButton = new JButton("Client");
+	JButton serverButton = new JButton("Host");
+	JButton clientButton = new JButton("Join");
 	
 	public MenuView() {
 		JPanel mainMenu = new JPanel(new GridLayout(0,1));

@@ -46,12 +46,24 @@ public class WebcamController {
 		}
 	}
 	
+	class ClientCloseAction implements ActionListener {
+		public void actionPerformed(ActionEvent ev) {
+			clientModel.closeConnection();
+		}
+	}
+	
+	class ServerCloseAction implements ActionListener {
+		public void actionPerformed(ActionEvent ev) {
+			serverModel.closeConnection();
+		}
+	}
 	
 	class ServerSelect implements ActionListener {
 		public void actionPerformed(ActionEvent ev) {
 			displayView.setVisible(true);
 			menu.setVisible(false);
 			displayView.addSelectionListener(new CompressionSelect());
+			displayView.addCloseListener(new ClientCloseAction());
 			serverModel.setupConnection();
 			serverModel.getPicture(webcam);
 			
@@ -63,6 +75,7 @@ public class WebcamController {
 			displayView.setVisible(true);
 			menu.setVisible(false);
 			displayView.addSelectionListener(new CompressionSelect());
+			displayView.addCloseListener(new ClientCloseAction());
 			try {
 				clientModel.setupConnection();
 			} catch (Exception e) {
