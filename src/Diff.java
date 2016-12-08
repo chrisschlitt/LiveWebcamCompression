@@ -1,13 +1,11 @@
 import java.io.Serializable;
 
 public class Diff {
-	Integer[] diffIndex;
-	Byte[] diffValue;
+	byte[] diffImage;
 	Integer length;
 	
-	public Diff(Integer[] diffIndex, Byte[] diffValue, Integer length){
-		this.diffIndex = diffIndex;
-		this.diffValue = diffValue;
+	public Diff(byte[] diffImage, Integer length){
+		this.diffImage = diffImage;
 		this.length = length;
 	}
 }

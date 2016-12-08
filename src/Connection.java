@@ -58,6 +58,10 @@ public class Connection {
     public long bytesSent;
     // Data Received
     public long bytesReceived;
+    // Data Sent
+    public long compressedbytesSent;
+    // Data Received
+    public long compressedbytesReceived;
     
     // Differencing Library
     public byte[] previousSent;
@@ -495,22 +499,25 @@ public class Connection {
                 	// System.out.println("Ready to receive stream object");
                     // Receive the image
                 	// long startTime = System.currentTimeMillis();
-                	/*
+                	
                 	byte[] receivedImage;
                 	StreamData streamData = (StreamData)Connection.this.inputStream.readObject();
-                	System.out.println("Received object");
+                	byte[] data = (byte[])streamData.data;
+                	Connection.this.compressedbytesReceived = Connection.this.compressedbytesReceived + data.length;
+                	// System.out.println("Received object");
                 	if(streamData.isDiff){
                 		receivedImage = DifferencingLibrary.rebuild((Diff)streamData.data, Connection.this.previousReceived);
                 	} else {
                 		Connection.this.previousReceived = (byte[])streamData.data;
                 		receivedImage = (byte[])streamData.data;
                 	}
-                	System.out.println("Total Time to decompress: " + (System.currentTimeMillis() - startTime));
+                	Connection.this.bytesReceived = Connection.this.bytesReceived + receivedImage.length;
+                	// System.out.println("Total Time to decompress: " + (System.currentTimeMillis() - startTime));
                 	// byte[] data = (byte[])Connection.this.inputStream.readObject();
                 	// Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
-                    */
+                    
                 	
-                    this.receivingModel.receiveImage(DifferencingLibrary.decompress((byte[])Connection.this.inputStream.readObject()));
+                    this.receivingModel.receiveImage(receivedImage);
                 }
                 System.out.println("Stopped Streaming");
             } catch(Exception e){
@@ -566,25 +573,29 @@ public class Connection {
     		// System.out.println("Sending a stream object");
             // Cast the object as a byte array
             byte[] data = (byte[])o;
-            /*
+            
             StreamData streamData;
             if(this.previousSent == null){
             	this.previousSent = data;
             	// System.out.println("Sending original data");
             	streamData = new StreamData(false, data);
+            	this.compressedbytesSent = this.compressedbytesSent + data.length;
+            	this.bytesSent = this.bytesSent + data.length;
             } else {
             	// System.out.println("Sending diff data");
             	Diff diff = DifferencingLibrary.getDiff(this.previousSent, data);
             	streamData = new StreamData(true, diff);
-            	System.out.println("Time taken to send: " + (System.currentTimeMillis() - startTime));
+            	this.compressedbytesSent = this.compressedbytesSent + diff.diffImage.length;
+            	this.bytesSent = this.bytesSent + data.length;
+            	// System.out.println("Time taken to send: " + (System.currentTimeMillis() - startTime));
 
 
             }
-            */
+            
             
             // Write the object to the stream
             try {
-                this.outputStream.writeObject(DifferencingLibrary.compress(data));
+                this.outputStream.writeObject(streamData);
                 // this.bytesSent = this.bytesSent + data.length;
             } catch (IOException e) {
             	if(this.continueStreaming){
@@ -659,6 +670,10 @@ public class Connection {
     public void exit(){
     	System.out.println("Sent: " + this.getSent() + " bytes");
     	System.out.println("Received: " + this.getReceived() + " bytes");
+    	System.out.println("Sent (compressed): " + this.getSent() + " bytes");
+    	System.out.println("Received (compressed): " + this.getReceived() + " bytes");
+    	System.out.println("Saved Sent: " + (this.getSent()-this.compressedbytesReceived) + " bytes");
+    	System.out.println("Saved Received: " + (this.getReceived()-this.compressedbytesSent) + " bytes");
     	try {
 			this.outputStream.close();
 		} catch (IOException e4) {
