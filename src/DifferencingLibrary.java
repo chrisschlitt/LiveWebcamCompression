@@ -16,17 +16,17 @@ public class DifferencingLibrary {
 		if(a.length < b.length){
 			smaller = 0;
 		}
-		System.out.println("a.length = " + a.length);
-		System.out.println("b.length = " + b.length);
+		// System.out.println("a.length = " + a.length);
+		// System.out.println("b.length = " + b.length);
 		while(j < (smallerLength)){
-			System.out.println("Testing i = " + i);
-			System.out.println("Testing j = " + j);
+			// System.out.println("Testing i = " + i);
+			// System.out.println("Testing j = " + j);
 			if(a[i] == b[j]){
 				i++;
 				j++;
 				continue;
 			} else {
-				System.out.println("Found a difference at " + j + ", used to be: " + a[i] + " but now is " + b[j]);
+				// System.out.println("Found a difference at " + j + ", used to be: " + a[i] + " but now is " + b[j]);
 				diff.put(j, b[j]);
 				i++;
 				j++;
