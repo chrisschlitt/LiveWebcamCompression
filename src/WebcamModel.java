@@ -1,6 +1,6 @@
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -107,7 +107,6 @@ public class WebcamModel implements Model {
             		int g = 0;
             		int b = 0;
             		BufferedImage image = WebcamModel.this.imageQueue.take();
-            		
             		RGBCompression rgbCompression = new RGBCompression(image, WebcamModel.this.compression, 0);
             		compressedBytes = rgbCompression.getCompressedImage();
         			sendPicture(compressedBytes);
@@ -143,6 +142,9 @@ public class WebcamModel implements Model {
 	                	BufferedImage reconstructed = rgbReconstruction.getReconstructedImage();
 	                	// System.out.println("                           Printing: " + n);
 	                	n++;
+	                	
+	                	
+	                	
 	                	// ImageIO.write(reconstructed, "PNG", new File("reconstructed"+numPictures+".png"));
 	                	WebcamModel.this.serverView.displayImage(reconstructed);
 	            		numPictures++;
@@ -155,13 +157,6 @@ public class WebcamModel implements Model {
                 
        }
     }
-    
-    public void receiveImage(byte[] compressedImage) throws Exception {	 	
-    	while(!this.doneStreaming){
-    		
-    	}
-    	
-	}
 	
     public void setView(JFrame serverView) {
 		this.serverView=(DisplayView) serverView;
