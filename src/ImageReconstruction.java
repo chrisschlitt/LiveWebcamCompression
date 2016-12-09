@@ -12,6 +12,7 @@ public class ImageReconstruction implements Runnable{
 	private int height;
 	int[] reconstructedArray;
 	int totalSize;
+	double[][] imgTmp;
 	/**
 	 * Constructor that gets a compressed image and gived out the reconstructed image
 	 * @param compressed
@@ -105,19 +106,19 @@ public class ImageReconstruction implements Runnable{
 	/**
 	 * Construct 2 row array from the compressed data
 	 * @param reconstructedArray
+	 * @return 
 	 * @return
 	 */
-	private double[][] construct2rowArray(int[] reconstructedArray) {
-		double[][] imgTmp = new double[2][reconstructedArray.length - 5];
+	private void construct2rowArray(int[] reconstructedArray) {
+		imgTmp = new double[2][reconstructedArray.length - 5];
 		for (int i = 0; i<reconstructedArray.length - 5; i++) {
 			imgTmp[0][i] = reconstructedArray[i];
 		}
-		imgTmp[1] = new double[imgTmp[0].length];
+		
 		height = reconstructedArray[reconstructedArray.length - 1];
 		width = reconstructedArray[reconstructedArray.length - 2];
 		theta = (double)reconstructedArray[reconstructedArray.length - 3]/10000000;
 		
-		return imgTmp;
 	}
 	
 	/**
@@ -186,7 +187,7 @@ public class ImageReconstruction implements Runnable{
 	@Override
 	public void run() {
 		 if (ratio != 1) {
-			 double[][] imgTmp = construct2rowArray(reconstructedArray);
+			 construct2rowArray(reconstructedArray);
 			 Matrix imgTmpMatrix = new Matrix(imgTmp);
 			 Matrix rotationMatrix = getRotationMatrix(theta);
 			 rotationMatrix = rotationMatrix.transpose();

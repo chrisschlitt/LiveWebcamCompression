@@ -16,7 +16,7 @@ public class RGBReconstruction {
 		int[][] redReconstructed;
 		int[][] greenReconstructed;
 		int[][] blueReconstructed;
-		
+		synchronized(this) {
 		 IntBuffer intBuf = ByteBuffer.wrap(compressedImage)
 			     .order(ByteOrder.BIG_ENDIAN)
 			     .asIntBuffer();
@@ -83,7 +83,7 @@ public class RGBReconstruction {
 
 		
 		reconstructedImage = setUpImage(redReconstructed, greenReconstructed, blueReconstructed);
-		
+		}
 	}
 	
 	public BufferedImage getReconstructedImage() {
