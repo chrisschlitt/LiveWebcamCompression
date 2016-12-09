@@ -68,11 +68,13 @@ public class WebcamModel implements Model {
                  		imageQueue.take();
                  	}
                  	imageQueue.put(image);
+                 	/*
                  	try {
                  	    Thread.sleep(33);
                  	} catch(InterruptedException ex) {
                  	    Thread.currentThread().interrupt();
                  	}
+                 	*/
                  }
                  
              } catch (Exception e) {

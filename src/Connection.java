@@ -516,6 +516,13 @@ public class Connection {
                     		Connection.this.compressedbytesReceived = Connection.this.compressedbytesReceived + ((byte[])streamData.data).length;
                     	}
                     	Connection.this.bytesReceived = Connection.this.bytesReceived + ((byte[])streamData.data).length;
+                    	
+                    	
+                    	
+                    	if (Connection.this.receiveQueue.size()>5){
+                    		Connection.this.receiveQueue.take();
+                     	}
+                    	
                     	Connection.this.receiveQueue.put(streamData);
                 	} catch(Exception e){
                 		// e.printStackTrace();
@@ -663,8 +670,10 @@ public class Connection {
             	
             }
     		try {
-    			// System.out.println("Queue Size: " + sendQueue.size());
-				sendQueue.put(streamData);
+    			if (sendQueue.size()>5){
+    				sendQueue.take();
+             	}
+    			sendQueue.put(streamData);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
