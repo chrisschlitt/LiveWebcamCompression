@@ -1,8 +1,10 @@
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 import com.github.sarxos.webcam.Webcam;
@@ -74,7 +76,7 @@ public class WebcamModel implements Model {
                  }
                  
              } catch (Exception e) {
-                 e.printStackTrace();
+                 // e.printStackTrace();
              }
     	}
     }
@@ -113,15 +115,28 @@ public class WebcamModel implements Model {
          */
         @Override
         public void run() {
-            
+            int n = 0;
                 while (!WebcamModel.this.doneStreaming) {
                 	try {
-	                	RGBReconstruction rgbReconstruction = new RGBReconstruction((byte[])WebcamModel.this.connection.getInbox());
+                		// System.out.println("                           Attempting: " + n);
+                		byte[] inbox = new byte[1024];
+                		try{
+                			inbox = (byte[])WebcamModel.this.connection.getInbox();
+                		} catch(Exception e){
+                			e.getStackTrace();
+                		}
+                		
+                		// System.out.println("Inbox Size: " + inbox.length);
+	                	RGBReconstruction rgbReconstruction = new RGBReconstruction(inbox);
+	                	// System.out.println("                           Initing: " + n);
 	                	BufferedImage reconstructed = rgbReconstruction.getReconstructedImage();
+	                	// System.out.println("                           Printing: " + n);
+	                	n++;
+	                	// ImageIO.write(reconstructed, "PNG", new File("reconstructed"+numPictures+".png"));
 	                	WebcamModel.this.serverView.displayImage(reconstructed);
 	            		numPictures++;
                 	} catch (Exception e) {
-                        e.printStackTrace();
+                        // e.printStackTrace();
                     }
                 }
                 

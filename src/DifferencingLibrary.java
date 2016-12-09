@@ -34,13 +34,14 @@ public class DifferencingLibrary {
 				i++;
 			}
 		}
-		
+
 		try {
 			diffImage = DifferencingLibrary.compress(diffImage);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		
 		Diff result = new Diff(diffImage, length);
 		return result;
@@ -49,9 +50,10 @@ public class DifferencingLibrary {
 	
 	public static byte[] rebuild(Diff diff, byte[] a){
 		
-		byte[] diffImage = new byte[0];
+		byte[] diffImage = diff.diffImage;
+		
 		try {
-			diffImage = DifferencingLibrary.decompress(diff.diffImage);
+			 diffImage = DifferencingLibrary.decompress(diff.diffImage);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -66,8 +68,7 @@ public class DifferencingLibrary {
 		byte[] b = new byte[diff.length];
 		int i = 0;
 		while(i < diff.length){
-			int tmp = (int)diffImage[i];
-			b[i] = (byte)(a[i] + tmp);
+			b[i] = (byte)(a[i] + diffImage[i]);
 			i++;
 		}
 		
@@ -76,26 +77,7 @@ public class DifferencingLibrary {
 	
 	public static byte[] compress(byte[] data) throws IOException { 
 		
-		   long start = System.currentTimeMillis();
-		   /*
-		   Deflater deflater = new Deflater();  
-		   deflater.setInput(data);  
-		   ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);   
-		   deflater.finish();  
-		   
-		   byte[] buffer = new byte[1024];   
-		   while (!deflater.finished()) {  
-		    int count = deflater.deflate(buffer); // returns the generated code... index  
-		    outputStream.write(buffer, 0, count);   
-		   }  
-		   outputStream.close();  
-		   byte[] output = outputStream.toByteArray();  
-		   // System.out.println("Original: " + data.length + " bytes");  
-		   // System.out.println("Compressed: " + output.length + " bytes"); 
-		     
-		    */
-		   
-		   
+
 		   
 		   // Compressor with highest level of compression
 		   Deflater compressor = new Deflater();
@@ -105,27 +87,23 @@ public class DifferencingLibrary {
 		   compressor.setInput(data);
 		   compressor.finish();
 		    
-		   // Create an expandable byte array to hold the compressed data.
-		   // It is not necessary that the compressed data will be smaller than
-		   // the uncompressed data.
-		   ByteArrayOutputStream bos = new ByteArrayOutputStream(data.length);
+
+		   ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(data.length);
 		    
 		   // Compress the data
 		   byte[] buf = new byte[1024];
 		   while (!compressor.finished()) {
 		       int count = compressor.deflate(buf);
-		       bos.write(buf, 0, count);
+		       byteArrayOutputStream.write(buf, 0, count);
 		   }
 		   try {
-		       bos.close();
+			   byteArrayOutputStream.close();
 		   } catch (IOException e) {
 		   }
 		    
 		   // Get the compressed data
-		   byte[] compressedData = bos.toByteArray();
+		   byte[] compressedData = byteArrayOutputStream.toByteArray();
 		   
-		   
-		   // System.out.println("Deflate Time: " + (System.currentTimeMillis() - start));
 
 		   return compressedData;  
 	} 
@@ -164,6 +142,7 @@ public class DifferencingLibrary {
 		start = System.currentTimeMillis();
 		byte[] c = DifferencingLibrary.rebuild(diff, a);
 		System.out.println("Time to decompress: " + (System.currentTimeMillis() - start));
+		
 		boolean same = Arrays.equals(b, c);
 		System.out.println("The result is rebuilt successfully: " + same);
 
