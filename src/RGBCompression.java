@@ -29,19 +29,19 @@ public class RGBCompression {
 		    try {
 				redThread.join();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 		    
 		    try {
 				greenThread.join();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 		    
 		    try {
 				blueThread.join();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 		        
 			byte[] redCompressed = redCompression.getCompressedImage();
