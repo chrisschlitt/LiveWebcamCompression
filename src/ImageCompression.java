@@ -13,17 +13,19 @@ public class ImageCompression implements Runnable{
 	private int totalSize;
 	private int ratio;
 	private int[][] image;
+	private int color;
 	/**
 	 * Constructor takes the original image and compresses it
 	 * @param image
 	 */
-	public ImageCompression(int[][] image, int ratio) {
+	public ImageCompression(int[][] image, int ratio, int color) {
 		originalImage = new double[image.length][image[0].length];
 		this.ratio = ratio;		
 		width = image[0].length;
 		height = image.length;
 		totalSize = image.length*image[0].length;
 		this.image = image;
+		this.color = color;
 	}
 
 	private void donotPerformCompression(int[][] image) {
@@ -39,7 +41,7 @@ public class ImageCompression implements Runnable{
 	        }
 	    }
 		
-		compressedImageBytes =  setupDataForCompression(uncompressedImage, 0, ratio);
+		compressedImageBytes =  setupDataForCompression(uncompressedImage, 0, ratio, color);
 	}
 
 	private void performCompression(int[][] image) {
@@ -75,7 +77,7 @@ public class ImageCompression implements Runnable{
 		Matrix compressedImageMatrix = rotationMatrix.times(resizeMatrixZ);
 		double imgTmp[][] = compressedImageMatrix.getArray();
 		compressedImage = imgTmp[0];
-		compressedImageBytes =  setupDataForCompression(compressedImage, theta, ratio);	
+		compressedImageBytes =  setupDataForCompression(compressedImage, theta, ratio, color);	
 	}
 
 	/**
@@ -101,9 +103,9 @@ public class ImageCompression implements Runnable{
 	 * @param theta
 	 * @return int array for compression
 	 */
-	private byte[] setupDataForCompression(double[] compressedImage, double theta, int ratio) {
+	private byte[] setupDataForCompression(double[] compressedImage, double theta, int ratio, int color) {
 		
-		 int[] compressedImageInt = new int[compressedImage.length + 4];
+		 int[] compressedImageInt = new int[compressedImage.length + 5];
 		for (int i = 0; i<compressedImage.length; i ++ ) {
 			compressedImageInt[i] = (int)compressedImage[i];
 		}
@@ -111,6 +113,7 @@ public class ImageCompression implements Runnable{
 		compressedImageInt[compressedImageInt.length - 2] = width;
 		compressedImageInt[compressedImageInt.length - 3] = (int)(theta*10000000);
 		compressedImageInt[compressedImageInt.length - 4] = ratio;
+		compressedImageInt[compressedImageInt.length - 5] = color;
         ByteBuffer byteBuffer = ByteBuffer.allocate(compressedImageInt.length * 4);        
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(compressedImageInt);

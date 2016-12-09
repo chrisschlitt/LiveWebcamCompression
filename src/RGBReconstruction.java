@@ -1,51 +1,86 @@
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 
 public class RGBReconstruction {
 	
 	byte[] rCompressed;
 	byte[] gCompressed;
 	byte[] bCompressed;
+	byte[] grayCompressed;
 	BufferedImage reconstructedImage;
 	
 	public RGBReconstruction(byte[] compressedImage) {
-		rCompressed = new byte[compressedImage.length/3];
-		gCompressed = new byte[compressedImage.length/3];
-		bCompressed = new byte[compressedImage.length/3];
+		int[][] redReconstructed;
+		int[][] greenReconstructed;
+		int[][] blueReconstructed;
 		
-		setUpRGBCompressed(compressedImage);
-		ImageReconstruction redReconstruction = new ImageReconstruction(rCompressed);
-		ImageReconstruction greenReconstruction = new ImageReconstruction(gCompressed);
-		ImageReconstruction blueReconstruction = new ImageReconstruction(bCompressed);
+		 IntBuffer intBuf = ByteBuffer.wrap(compressedImage)
+			     .order(ByteOrder.BIG_ENDIAN)
+			     .asIntBuffer();
+     int[] colorArray = new int[intBuf.remaining()];
+	 intBuf.get(colorArray);
+	 if (colorArray[colorArray.length - 5] == 0) {
+		    rCompressed = new byte[compressedImage.length/3];
+			gCompressed = new byte[compressedImage.length/3];
+			bCompressed = new byte[compressedImage.length/3];
+			
+			setUpRGBCompressed(compressedImage);
+			ImageReconstruction redReconstruction = new ImageReconstruction(rCompressed);
+			ImageReconstruction greenReconstruction = new ImageReconstruction(gCompressed);
+			ImageReconstruction blueReconstruction = new ImageReconstruction(bCompressed);
+			
+			Thread redThread = new Thread(redReconstruction);
+		    Thread greenThread = new Thread(greenReconstruction);
+		    Thread blueThread = new Thread(blueReconstruction);
+		    redThread.start();
+		    greenThread.start();
+		    blueThread.start();
+		    try {
+				redThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		    
+		    try {
+				greenThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		    
+		    try {
+				blueThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		    
+			redReconstructed = redReconstruction.getReconstructedImage();
+			greenReconstructed = greenReconstruction.getReconstructedImage();
+			blueReconstructed = blueReconstruction.getReconstructedImage();
+	 
+	 } else {
+		 grayCompressed = new byte[compressedImage.length];
+		 grayCompressed = compressedImage;
+		 ImageReconstruction grayReconstruction = new ImageReconstruction(grayCompressed);
+		 Thread grayThread = new Thread(grayReconstruction);
+		 grayThread.start();
+		    try {
+		    	grayThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+	
+		    redReconstructed = grayReconstruction.getReconstructedImage();
+			greenReconstructed = grayReconstruction.getReconstructedImage();
+			blueReconstructed = grayReconstruction.getReconstructedImage();
+	 
+	 }
+	 
+	    
 		
-		Thread redThread = new Thread(redReconstruction);
-	    Thread greenThread = new Thread(greenReconstruction);
-	    Thread blueThread = new Thread(blueReconstruction);
-	    redThread.start();
-	    greenThread.start();
-	    blueThread.start();
-	    try {
-			redThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	    
-	    try {
-			greenThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	    
-	    try {
-			blueThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	    
-		
-		int[][] redReconstructed = redReconstruction.getReconstructedImage();
-		int[][] greenReconstructed = greenReconstruction.getReconstructedImage();
-		int[][] blueReconstructed = blueReconstruction.getReconstructedImage();
+
 		
 		reconstructedImage = setUpImage(redReconstructed, greenReconstructed, blueReconstructed);
 		

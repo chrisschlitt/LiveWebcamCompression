@@ -76,8 +76,6 @@ public class ImageReconstruction implements Runnable{
 	 * @return
 	 */
 	private int[][] convertDoubletoInt(double[][] expandedImage) {
-		// System.out.println("Length1: " + expandedImage.length);
-		// System.out.println("Length2: " + expandedImage[0].length);
 		int[][] reconstructedImage = new int[expandedImage.length][expandedImage[0].length];
 		for(int i = 0; i < expandedImage.length; i++) {
 			for (int j= 0; j < expandedImage[0].length; j++) {
@@ -110,9 +108,8 @@ public class ImageReconstruction implements Runnable{
 	 * @return
 	 */
 	private double[][] construct2rowArray(int[] reconstructedArray) {
-		// System.out.println("&&&&&&&&&&&&&RECONSTRUCTION: " + reconstructedArray.length);
-		double[][] imgTmp = new double[2][reconstructedArray.length - 3];
-		for (int i = 0; i<reconstructedArray.length - 3; i++) {
+		double[][] imgTmp = new double[2][reconstructedArray.length - 5];
+		for (int i = 0; i<reconstructedArray.length - 5; i++) {
 			imgTmp[0][i] = reconstructedArray[i];
 		}
 		imgTmp[1] = new double[imgTmp[0].length];
@@ -194,7 +191,7 @@ public class ImageReconstruction implements Runnable{
 			 Matrix rotationMatrix = getRotationMatrix(theta);
 			 rotationMatrix = rotationMatrix.transpose();
 			 Matrix expandedImageMatrix = rotationMatrix.times(imgTmpMatrix);
-			 // System.out.println("+++++++++++SYSTEM: Width: " + width + " AND HEIGHT: " + height);
+	
 			 double [][] expandedImageTmp = reshape(expandedImageMatrix.getArray(), width, height);
 			 double[][] expandedImage = rephaseImage(expandedImageTmp);		 
 		 

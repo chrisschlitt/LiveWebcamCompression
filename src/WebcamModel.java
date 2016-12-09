@@ -97,7 +97,7 @@ public class WebcamModel implements Model {
             		int b = 0;
             		BufferedImage image = WebcamModel.this.imageQueue.take();
             		
-            		RGBCompression rgbCompression = new RGBCompression(image, WebcamModel.this.compression);
+            		RGBCompression rgbCompression = new RGBCompression(image, WebcamModel.this.compression, 0);
             		compressedBytes = rgbCompression.getCompressedImage();
         			sendPicture(compressedBytes);
                 }
