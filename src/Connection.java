@@ -276,7 +276,7 @@ public class Connection {
      */
     public boolean sendPacketData(byte[] data, InetAddress address) throws IOException{
     	// System.out.println("Sending a packet");
-    	for(int i=0; i < 4; i++){
+    	for(int i=0; i < 3; i++){
     		// Initiate the DatagramSocket
             DatagramSocket socket;
             socket = new DatagramSocket();
@@ -288,7 +288,7 @@ public class Connection {
             try{
             	socket.send(requestPacket);
             } catch (Exception e){
-            	e.printStackTrace();
+            	// e.printStackTrace();
             }
             
             
@@ -362,9 +362,14 @@ public class Connection {
                     try {
                     	socket.send(requestPacket);
                     } catch (Exception e){
-                    	socket = new DatagramSocket();
-                        socket.setBroadcast(true);
-                    	socket.send(requestPacket);
+                    	try{
+                        	socket = new DatagramSocket();
+                            socket.setBroadcast(true);
+                        	socket.send(requestPacket);
+                    		
+                    	} catch(Exception ee){
+                    		
+                    	}
                     }
                     
                     // Check if the discovery response packet has been received
@@ -421,14 +426,14 @@ public class Connection {
      *
      */
     public void discoverIP() throws Exception{
-    	int numThreads = 1;
+    	int numThreads = 6;
     	int threadNumber = 0;
     	Thread discoverThreads[] = new Thread[numThreads];
     	// System.out.println("Beginning discovery");
     	while((threadNumber < numThreads) && (this.connectedComputerIP == null)){
 			discoverThreads[threadNumber] = new Thread(new DiscoverThread());
 			discoverThreads[threadNumber].start();
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 			threadNumber++;
     	}
     	threadNumber--;
@@ -533,26 +538,17 @@ public class Connection {
                 System.out.println("Stopped Streaming");
             } catch(Exception e){
                 // e.getStackTrace();
+            	Connection.this.exit();
             }
         }
     }
     
     public Object getInbox() throws InterruptedException{
-    	while(this.receiveQueue.isEmpty()){
-    		try {
-				Thread.sleep(5);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
-    	
     	try	{
     		Object result = this.receiveQueue.take().data;
     		// System.out.println("666666666666664Queue size: " + ((Diff)streamData.data).diffImage.length);kkk(was returning diff, should be byte[])
     		return result;
     	} catch(Exception e){
-    		System.out.println("Shit");
     		e.printStackTrace();
     	}
     	return null;
@@ -631,8 +627,9 @@ public class Connection {
                     // this.bytesSent = this.bytesSent + data.length;
                 } catch (Exception e) {
                 	if(Connection.this.continueStreaming){
-                		e.printStackTrace();
+                		// e.printStackTrace();
                 		// Connection.this.continueStreaming = false;
+                		
                 	}
                 	
                     // System.out.println("BROKEN PIPE");
@@ -728,12 +725,10 @@ public class Connection {
                     } catch (Exception e){
                         fromAddr = packet.getAddress().getHostAddress().toString();
                     }
-                    System.out.println("Received Packet: " + message);
                     // Route the message
                     if(message.equals("END") && !fromAddr.equals(localAddr)){
                     	if(!receivedEnd){
                     		receivedEnd = true;
-                    		Connection.this.receivingModel.doneStreaming();
                     		Connection.this.exit();
                     	}
                     }
@@ -748,7 +743,12 @@ public class Connection {
      * A method to close the connections
      */
     public void exit(){
-    	
+
+		this.receivingModel.doneStreaming();
+    	this.continueStreaming = false;
+		
+		// this.endThread.join();
+		
     	try {
 			this.outputStream.close();
 		} catch (IOException e4) {
@@ -756,10 +756,6 @@ public class Connection {
 		try {
 			this.inputStream.close();
 		} catch (IOException e3) {
-		}
-		try {
-			this.serverSocket.close();
-		} catch (IOException e2) {
 		}
 		try {
 			this.incomingSocket.close();
@@ -770,11 +766,16 @@ public class Connection {
 		} catch (IOException e) {
 		}
 		try {
-			this.endThread.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			this.serverSocket.close();
+		} catch (IOException e2) {
 		}
+		
+		this.endThread.interrupt();
+		this.discoveryThread.interrupt();
+		this.sendThread.interrupt();
+		this.listeningThread.interrupt();
+		System.out.println("Goodbye");
+		System.exit(0);
     }
     
     /**
@@ -790,10 +791,8 @@ public class Connection {
     	byte[] data = "END".getBytes();
     	try {
 			this.sendPacketData(data, this.connectedComputerIP);
-	    	System.out.println("Send END Packet");
 		} catch (IOException e) {
 		}
     	this.exit();
-    	System.out.println("Stream Ended");
     }
 }

@@ -12,6 +12,7 @@ public class ImageReconstruction implements Runnable{
 	private int height;
 	int[] reconstructedArray;
 	int totalSize;
+	double[][] imgTmp;
 	/**
 	 * Constructor that gets a compressed image and gived out the reconstructed image
 	 * @param compressed
@@ -76,12 +77,18 @@ public class ImageReconstruction implements Runnable{
 	 * @return
 	 */
 	private int[][] convertDoubletoInt(double[][] expandedImage) {
-		int[][] reconstructedImage = new int[expandedImage.length][expandedImage[0].length];
-		for(int i = 0; i < expandedImage.length; i++) {
-			for (int j= 0; j < expandedImage[0].length; j++) {
-				reconstructedImage[i][j] = (int)expandedImage[i][j];
+		int[][] reconstructedImage = null;
+		try{
+			reconstructedImage = new int[expandedImage.length][expandedImage[0].length];
+			for(int i = 0; i < expandedImage.length; i++) {
+				for (int j= 0; j < expandedImage[0].length; j++) {
+					reconstructedImage[i][j] = (int)expandedImage[i][j];
+				}
 			}
+		} catch(Exception e){
+			
 		}
+		
 		return reconstructedImage;
 	}
 	
@@ -107,17 +114,16 @@ public class ImageReconstruction implements Runnable{
 	 * @param reconstructedArray
 	 * @return
 	 */
-	private double[][] construct2rowArray(int[] reconstructedArray) {
-		double[][] imgTmp = new double[2][reconstructedArray.length - 5];
+	private void construct2rowArray(int[] reconstructedArray) {
+		imgTmp = new double[2][reconstructedArray.length - 5];
 		for (int i = 0; i<reconstructedArray.length - 5; i++) {
 			imgTmp[0][i] = reconstructedArray[i];
 		}
-		imgTmp[1] = new double[imgTmp[0].length];
+
 		height = reconstructedArray[reconstructedArray.length - 1];
 		width = reconstructedArray[reconstructedArray.length - 2];
 		theta = (double)reconstructedArray[reconstructedArray.length - 3]/10000000;
 		
-		return imgTmp;
 	}
 	
 	/**
@@ -186,7 +192,7 @@ public class ImageReconstruction implements Runnable{
 	@Override
 	public void run() {
 		 if (ratio != 1) {
-			 double[][] imgTmp = construct2rowArray(reconstructedArray);
+			 construct2rowArray(reconstructedArray);
 			 Matrix imgTmpMatrix = new Matrix(imgTmp);
 			 Matrix rotationMatrix = getRotationMatrix(theta);
 			 rotationMatrix = rotationMatrix.transpose();
