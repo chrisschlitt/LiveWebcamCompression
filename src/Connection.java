@@ -511,6 +511,7 @@ public class Connection {
                     	if(streamData.isDiff){
                         	Connection.this.compressedbytesReceived = Connection.this.compressedbytesReceived + ((Diff)streamData.data).diffImage.length;
                     		streamData.data = DifferencingLibrary.rebuild((Diff)streamData.data, Connection.this.previousReceived);
+                    		Connection.this.previousReceived = (byte[])streamData.data;
                     	} else {
                     		Connection.this.previousReceived = (byte[])streamData.data;
                     		Connection.this.compressedbytesReceived = Connection.this.compressedbytesReceived + ((byte[])streamData.data).length;
@@ -622,6 +623,10 @@ public class Connection {
         			StreamData streamData = Connection.this.sendQueue.take();
         			// System.out.println(n + "Sending: " + streamData.isDiff);
                     Connection.this.outputStream.writeObject(streamData);
+                    if(n > 50){
+                    	Connection.this.outputStream.reset();
+                    }
+                    
                     // System.out.println(n + "Baseball");
                     // this.bytesSent = this.bytesSent + data.length;
                 } catch (Exception e) {
@@ -657,9 +662,11 @@ public class Connection {
             	this.bytesSent = this.bytesSent + ((byte[])streamData.data).length;
             	this.previousSentCounter = 0;
             } else {
+            	// 
             	// System.out.println("Sending diff data");
             	// System.out.println("2Queue Size: " + this.sendQueue.size());
             	Diff diff = DifferencingLibrary.getDiff(this.previousSent, (byte[])o);
+            	this.previousSent = (byte[])o;
             	streamData = new StreamData(true, diff);
             	this.compressedbytesSent = this.compressedbytesSent + diff.diffImage.length;
             	this.bytesSent = this.bytesSent + diff.length;
