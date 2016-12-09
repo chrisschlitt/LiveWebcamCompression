@@ -9,8 +9,6 @@ public interface Model {
 	
 	public void sendPicture(byte[] compressedImage) throws Exception;
 	
-	public void receiveImage(byte[] compressedImage) throws Exception;
-	
 	public void setView(JFrame view);
 	
 	public void getPicture(Webcam webcam);

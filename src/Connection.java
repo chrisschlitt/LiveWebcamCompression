@@ -1,6 +1,3 @@
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DecimalFormat;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -74,6 +72,8 @@ public class Connection {
 
     public BlockingQueue<StreamData> sendQueue = new LinkedBlockingQueue<StreamData>();
     public BlockingQueue<StreamData> receiveQueue = new LinkedBlockingQueue<StreamData>();
+    
+    public long fixTime;
     
     
     /**
@@ -159,6 +159,7 @@ public class Connection {
     public class DiscoveryThread implements Runnable {
     	boolean receivedDiscovery = false;
     	boolean receivedStream = false;
+    	boolean receivedFix = false;
     	
         /**
          * The run method
@@ -213,6 +214,30 @@ public class Connection {
                             byte[] sendData = "DISCOVERY_RESPONSE".getBytes();
                             // Connection2.this.continueListening = false;
                             Connection.this.sendPacketData(sendData, packet.getAddress());
+                            
+                            
+                            // Make sure both aren't "connected to the client"
+                            // Respond to the client, confirming this is the server
+                            Connection.this.fixTime = System.currentTimeMillis();
+                            sendData = ("FIX" + fixTime).getBytes();
+                            // Connection2.this.continueListening = false;
+                            Connection.this.sendPacketData(sendData, packet.getAddress());
+                    	}
+                    } else if (message.startsWith("FIX") && !fromAddr.equals(localAddr) && (Connection.this.isServer == true)) {
+                    	if(!receivedFix){
+                    		receivedFix = true;
+                    		String timestamp = message.substring(3, message.length());
+                    		Long time = Long.parseLong(timestamp);
+                    		if(Connection.this.fixTime > time){
+                    			// Convert this to client
+                    			System.out.println("Converting to Client");
+                    			Connection.this.isServer = false;
+                    			int tmpPort = Connection.this.incomingPort;
+                        		Connection.this.incomingPort = Connection.this.outgoingPort;
+                        		Connection.this.outgoingPort = tmpPort;
+                        		System.out.println("Connected to Server");
+                        		Connection.this.beginListeningForStream();
+                    		}
                     	}
                     } else if (message.equals("DISCOVERY_RESPONSE") && !fromAddr.equals(localAddr)) {
                     	if(!receivedDiscovery){
@@ -514,14 +539,14 @@ public class Connection {
                     	StreamData streamData = (StreamData)Connection.this.inputStream.readObject();
 
                     	if(streamData.isDiff){
-                        	Connection.this.compressedbytesReceived = Connection.this.compressedbytesReceived + ((Diff)streamData.data).diffImage.length;
+                        	Connection.this.compressedbytesReceived = Connection.this.compressedbytesReceived + (((Diff)streamData.data).diffImage.length / 1024);
                     		streamData.data = DifferencingLibrary.rebuild((Diff)streamData.data, Connection.this.previousReceived);
                     		Connection.this.previousReceived = (byte[])streamData.data;
                     	} else {
                     		Connection.this.previousReceived = (byte[])streamData.data;
-                    		Connection.this.compressedbytesReceived = Connection.this.compressedbytesReceived + ((byte[])streamData.data).length;
+                    		Connection.this.compressedbytesReceived = Connection.this.compressedbytesReceived + (((byte[])streamData.data).length / 1024);
                     	}
-                    	Connection.this.bytesReceived = Connection.this.bytesReceived + ((byte[])streamData.data).length;
+                    	Connection.this.bytesReceived = Connection.this.bytesReceived + (((byte[])streamData.data).length / 1024);
                     	
                     	
                     	
@@ -655,8 +680,8 @@ public class Connection {
             	this.previousSent = (byte[])o;
             	// System.out.println("Sending original data");
             	streamData = new StreamData(false, o);
-            	this.compressedbytesSent = this.compressedbytesSent + ((byte[])streamData.data).length;
-            	this.bytesSent = this.bytesSent + ((byte[])streamData.data).length;
+            	this.compressedbytesSent = this.compressedbytesSent + (((byte[])streamData.data).length / 1024);
+            	this.bytesSent = this.bytesSent + (((byte[])streamData.data).length / 1024);
             	this.previousSentCounter = 0;
             } else {
             	// 
@@ -665,8 +690,8 @@ public class Connection {
             	Diff diff = DifferencingLibrary.getDiff(this.previousSent, (byte[])o);
             	this.previousSent = (byte[])o;
             	streamData = new StreamData(true, diff);
-            	this.compressedbytesSent = this.compressedbytesSent + diff.diffImage.length;
-            	this.bytesSent = this.bytesSent + diff.length;
+            	this.compressedbytesSent = this.compressedbytesSent + (diff.diffImage.length / 1024);
+            	this.bytesSent = this.bytesSent + (diff.length / 1024);
             	// System.out.println("Time taken to send: " + (System.currentTimeMillis() - startTime));
             	this.previousSentCounter++;
             	
@@ -743,7 +768,16 @@ public class Connection {
      * A method to close the connections
      */
     public void exit(){
-
+    	// Print stats
+    	DecimalFormat formatter = new DecimalFormat("###,###,###");
+    	DecimalFormat formatter1 = new DecimalFormat("##");
+    	System.out.println("Sent: " + formatter.format(this.getSent()) + " KB");
+    	System.out.println("Received: " + formatter.format(this.getReceived()) + " KB");
+    	System.out.println("Sent (diff): " + formatter.format(this.compressedbytesSent) + " KB");
+    	System.out.println("Received (diff): " + formatter.format(this.compressedbytesReceived) + " KB");
+    	System.out.println("Saved Sent: " + formatter.format((this.getSent()-this.compressedbytesSent)) + " KB (" + formatter.format((((double)this.getSent()-(double)this.compressedbytesSent)/(double)this.getSent()) * 100) + "%)");
+    	System.out.println("Saved Received: " + formatter.format((this.getReceived()-this.compressedbytesReceived)) + " KB (" + formatter.format((((double)this.getReceived()-(double)this.compressedbytesReceived)/(double)this.getReceived()) * 100) + "%)");
+    	
 		this.receivingModel.doneStreaming();
     	this.continueStreaming = false;
 		
@@ -782,12 +816,6 @@ public class Connection {
      * A method to close the connections
      */
     public void close(){
-    	System.out.println("Sent: " + this.getSent() + " bytes");
-    	System.out.println("Received: " + this.getReceived() + " bytes");
-    	System.out.println("Sent (compressed): " + this.compressedbytesSent + " bytes");
-    	System.out.println("Received (compressed): " + this.compressedbytesReceived + " bytes");
-    	System.out.println("Saved Sent: " + (this.getSent()-this.compressedbytesReceived) + " bytes");
-    	System.out.println("Saved Received: " + (this.getReceived()-this.compressedbytesSent) + " bytes");
     	byte[] data = "END".getBytes();
     	try {
 			this.sendPacketData(data, this.connectedComputerIP);
