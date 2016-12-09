@@ -13,11 +13,13 @@ public class RGBReconstruction {
 	BufferedImage reconstructedImage;
 	
 	public RGBReconstruction(byte[] compressedImage) {
+	
 		int[][] redReconstructed;
 		int[][] greenReconstructed;
 		int[][] blueReconstructed;
-		
-		 IntBuffer intBuf = ByteBuffer.wrap(compressedImage)
+	
+	synchronized(this) {	
+     IntBuffer intBuf = ByteBuffer.wrap(compressedImage)
 			     .order(ByteOrder.BIG_ENDIAN)
 			     .asIntBuffer();
      int[] colorArray = new int[intBuf.remaining()];
@@ -83,7 +85,7 @@ public class RGBReconstruction {
 
 		
 		reconstructedImage = setUpImage(redReconstructed, greenReconstructed, blueReconstructed);
-		
+	}
 	}
 	
 	public BufferedImage getReconstructedImage() {

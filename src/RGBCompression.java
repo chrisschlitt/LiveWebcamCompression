@@ -9,7 +9,7 @@ public class RGBCompression {
 	byte[] compressedImage;
 
 	public RGBCompression(BufferedImage image, int ratio, int color) {
-		
+        synchronized(this) {		
 		red = new int[image.getHeight()][image.getWidth()];
 		green = new int[image.getHeight()][image.getWidth()];
 		blue = new int[image.getHeight()][image.getWidth()];
@@ -65,7 +65,7 @@ public class RGBCompression {
 		}
 		
 
-		
+        }
 	}
 	
 	public byte[] getCompressedImage() {
