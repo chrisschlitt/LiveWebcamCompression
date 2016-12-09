@@ -14,6 +14,7 @@ public class WebcamModel implements Model {
 	private Webcam webcam;
 	private Thread takePictureThread;
 	private Thread serverProcessPictureThread;
+	private Thread clientProcessPictureThread;
 	private DisplayView serverView;
 	
 	private BlockingQueue<BufferedImage> imageQueue = new LinkedBlockingQueue<BufferedImage>();
@@ -106,11 +107,34 @@ public class WebcamModel implements Model {
        }
     }
     
+    public class ClientProcessPictureThread implements Runnable {
+        /**
+         * The run method
+         */
+        @Override
+        public void run() {
+            
+                while (!WebcamModel.this.doneStreaming) {
+                	try {
+	                	RGBReconstruction rgbReconstruction = new RGBReconstruction((byte[])WebcamModel.this.connection.getInbox());
+	                	BufferedImage reconstructed = rgbReconstruction.getReconstructedImage();
+	                	WebcamModel.this.serverView.displayImage(reconstructed);
+	            		numPictures++;
+                	} catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                
+           
+                
+       }
+    }
+    
     public void receiveImage(byte[] compressedImage) throws Exception {	 	
-    	RGBReconstruction rgbReconstruction = new RGBReconstruction(compressedImage);
-    	BufferedImage reconstructed = rgbReconstruction.getReconstructedImage();
-		this.serverView.displayImage(reconstructed);
-		numPictures++;
+    	while(!this.doneStreaming){
+    		
+    	}
+    	
 	}
 	
     public void setView(JFrame serverView) {
@@ -121,8 +145,10 @@ public class WebcamModel implements Model {
 		this.webcam = webcam;
 		this.takePictureThread = new Thread(new TakePictureThread());
 		this.serverProcessPictureThread = new Thread(new ServerProcessPictureThread());
+		this.clientProcessPictureThread = new Thread(new ClientProcessPictureThread());
 		this.takePictureThread.start();
 		this.serverProcessPictureThread.start();
+		this.clientProcessPictureThread.start();
 	}
 	
 }

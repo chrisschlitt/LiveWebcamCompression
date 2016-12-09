@@ -1,3 +1,4 @@
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Connection
@@ -45,8 +48,10 @@ public class Connection {
     public Thread discoveryThread;
     // Receiving Thread
     public Thread listeningThread;
-    // End Thread
+    // Send Thread
     public Thread endThread;
+    // End Thread
+    public Thread sendThread;
     // Output Socket
     public Socket streamingSocket;
     // The receiving model for callbacks
@@ -65,6 +70,9 @@ public class Connection {
     // Differencing Library
     public byte[] previousSent;
     public byte[] previousReceived;
+
+    public BlockingQueue<StreamData> sendQueue = new LinkedBlockingQueue<StreamData>();
+    public BlockingQueue<StreamData> receiveQueue = new LinkedBlockingQueue<StreamData>();
     
     
     /**
@@ -479,7 +487,7 @@ public class Connection {
             this.receivingModel = receivingModel2;
         }
         
-        
+
         /**
          * The run method
          *
@@ -516,13 +524,23 @@ public class Connection {
                 	// Connection.this.bytesReceived = Connection.this.bytesReceived + data.length;
                     
                 	*/
-                    this.receivingModel.receiveImage((byte[])Connection.this.inputStream.readObject());
+                	Connection.this.receiveQueue.put((StreamData)Connection.this.inputStream.readObject());
                 }
                 System.out.println("Stopped Streaming");
             } catch(Exception e){
                 e.getStackTrace();
             }
         }
+    }
+    
+    public Object getInbox(){
+    	try {
+			return this.receiveQueue.take().data;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return null;
     }
     
     /**
@@ -560,18 +578,77 @@ public class Connection {
         // System.out.println("Ready to send stream");
         // Set the start streaming flag
         this.startStreaming = true;
+        // Create the listening thread
+        this.sendThread = new Thread(new SendThread());
+        // Start the listening thread
+        this.sendThread.start();
     }
+    
+    
+    
+    public class SendThread implements Runnable {  
+
+    	
+
+    	
+
+        /**
+         * The run method
+         *
+         * Place callback functions (receiveImage) here
+         */
+        @Override
+        public void run() {
+        	Connection.this.continueStreaming = true;
+        	while(Connection.this.continueStreaming){
+        		try {
+                    Connection.this.outputStream.writeObject(Connection.this.sendQueue.take());
+                    // this.bytesSent = this.bytesSent + data.length;
+                } catch (Exception e) {
+                	if(Connection.this.continueStreaming){
+                		e.printStackTrace();
+                		// Connection.this.continueStreaming = false;
+                	}
+                	
+                    // System.out.println("BROKEN PIPE");
+                    // this.close();
+                }
+        	}
+        	
+        }
+    }
+    
+    
+    
+    
+ 
+    
+    
+    
+    
     
     /**
      * A method to stream data
      * @param o: Object - The data to stream
      */
     public void sendStreamData(Object o){
+
     	if(this.continueStreaming){
+    		StreamData streamData = new StreamData(false, o);
+    		try {
+    			// System.out.println("Queue Size: " + sendQueue.size());
+				sendQueue.put(streamData);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+    		
+    		
+    		
     		// long startTime = System.currentTimeMillis();
     		// System.out.println("Sending a stream object");
             // Cast the object as a byte array
-            byte[] data = (byte[])o;
+            // byte[] data = (byte[])o;
             /*
             try{
             	FileOutputStream fos = new FileOutputStream("test.txt");
@@ -602,19 +679,7 @@ public class Connection {
             }
             */
             
-            // Write the object to the stream
-            try {
-                this.outputStream.writeObject(data);
-                // this.bytesSent = this.bytesSent + data.length;
-            } catch (IOException e) {
-            	if(this.continueStreaming){
-            		e.printStackTrace();
-            		this.continueStreaming = false;
-            	}
-            	
-                // System.out.println("BROKEN PIPE");
-                // this.close();
-            }
+            
     	}
     	
     }
