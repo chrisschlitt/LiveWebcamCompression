@@ -1,61 +1,83 @@
-
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import Jama.*; 
 
-public class ImageCompression {
+public class ImageCompression implements Runnable{
 	private double[][] originalImage; 
 	private double[] compressedImage;
 	private byte[] compressedImageBytes;
 	private double[][] expandedImage;
 	private int width;
 	private int height;
+	private int totalSize;
+	private int ratio;
+	private int[][] image;
+	private int color;
 	/**
 	 * Constructor takes the original image and compresses it
 	 * @param image
 	 */
-	public ImageCompression(int[][] image) {
+	public ImageCompression(int[][] image, int ratio, int color) {
 		originalImage = new double[image.length][image[0].length];
+		this.ratio = ratio;		
+		width = image[0].length;
+		height = image.length;
+		totalSize = image.length*image[0].length;
+		this.image = image;
+		this.color = color;
+	}
+
+	private void donotPerformCompression(int[][] image) {
+		int k = 0;
+		double uncompressedImage[] = new double[totalSize];
+		//Converting original image from int to double
+		for(int i = 0; i < image.length; i++)
+	    {
+	        for(int j = 0; j < image[0].length; j++) {
+
+	    		uncompressedImage[k] = (double) image[i][j];
+	        	k++;	
+	        }
+	    }
 		
+		compressedImageBytes =  setupDataForCompression(uncompressedImage, 0, ratio, color);
+	}
+
+	private void performCompression(int[][] image) {
 		//Converting original image from int to double
 		for(int i = 0; i < image.length; i++)
 	    {
 	        for(int j = 0; j < image[0].length; j++)
 	    		originalImage[i][j] = (double) image[i][j];
-		}		
+		}
 		
-		width = image[0].length;
-		height = image.length;
-		int totalSize = image.length*image[0].length;
-		// resize matrix into two rows
+//		resize matrix into two rows
 		double[][] resizeMatrix = new double[2][totalSize/2];
 		resizeMatrix = reshape(originalImage, 2, totalSize/2 );
-		 
+	 
 		Matrix resizeMatrixZ = new Matrix(resizeMatrix);
-		
-//      Covariance Matrix
+	
+//  	Covariance Matrix
 		Matrix covariance = resizeMatrixZ.times(resizeMatrixZ.transpose());
 		covariance = covariance.times(2/(double)totalSize);
 
-//	    [U,S,V] = svd(X) produces a diagonal matrix S, of the same 
-//	    dimension as X and with nonnegative diagonal elements in
-//	    decreasing order, and unitary matrices U and V so that
-//	    X = U*S*V'.		
+//    	[U,S,V] = svd(X) produces a diagonal matrix S, of the same 
+//    	dimension as X and with nonnegative diagonal elements in
+//    	decreasing order, and unitary matrices U and V so that
+//    	X = U*S*V'.		
 		SingularValueDecomposition SVD = new SingularValueDecomposition(covariance);
 		double singularValues[] = SVD.getSingularValues();	
 		double covArray[][] = covariance.getArray();
-		
+	
 		// Calculate rotation factor
 		double theta = Math.atan((singularValues[0] - covArray[0][0])/covArray[1][0]);
-		
+	
 		Matrix rotationMatrix = getRotationMatrix(theta);
 		Matrix compressedImageMatrix = rotationMatrix.times(resizeMatrixZ);
 		double imgTmp[][] = compressedImageMatrix.getArray();
 		compressedImage = imgTmp[0];
-		 
-		compressedImageBytes =  setupDataForCompression(compressedImage, theta);
-		
+		compressedImageBytes =  setupDataForCompression(compressedImage, theta, ratio, color);	
 	}
 
 	/**
@@ -81,21 +103,23 @@ public class ImageCompression {
 	 * @param theta
 	 * @return int array for compression
 	 */
-	private byte[] setupDataForCompression(double[] compressedImage, double theta) {
+	private byte[] setupDataForCompression(double[] compressedImage, double theta, int ratio, int color) {
 		
-		int[] compressedImageInt = new int[compressedImage.length + 3];
+		 int[] compressedImageInt = new int[compressedImage.length + 5];
 		for (int i = 0; i<compressedImage.length; i ++ ) {
 			compressedImageInt[i] = (int)compressedImage[i];
 		}
 		compressedImageInt[compressedImageInt.length - 1] = height;
 		compressedImageInt[compressedImageInt.length - 2] = width;
 		compressedImageInt[compressedImageInt.length - 3] = (int)(theta*10000000);
-		
+		compressedImageInt[compressedImageInt.length - 4] = ratio;
+		compressedImageInt[compressedImageInt.length - 5] = color;
         ByteBuffer byteBuffer = ByteBuffer.allocate(compressedImageInt.length * 4);        
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(compressedImageInt);
 		return byteBuffer.array();
 	}
+	
 
 	/**
 	 * Getter for the Compressed Images 
@@ -137,5 +161,18 @@ public class ImageCompression {
 
 	        }
 	        return B;
-	    } 
+	    }
+
+	@Override
+	public void run() {
+		if (ratio != 1)
+		{   
+			performCompression(image);
+			
+		}
+		else {
+			
+			donotPerformCompression(image);
+		}
+	} 
 }

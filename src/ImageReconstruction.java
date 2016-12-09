@@ -4,11 +4,14 @@ import java.nio.IntBuffer;
 
 import Jama.Matrix;
 
-public class ImageReconstruction {
+public class ImageReconstruction implements Runnable{
 	private int[][] reconstructedImage;
 	double theta;
+	int ratio;
 	private int width;
 	private int height;
+	int[] reconstructedArray;
+	int totalSize;
 	/**
 	 * Constructor that gets a compressed image and gived out the reconstructed image
 	 * @param compressed
@@ -17,20 +20,14 @@ public class ImageReconstruction {
 		 IntBuffer intBuf = ByteBuffer.wrap(compressed)
 				     .order(ByteOrder.BIG_ENDIAN)
 				     .asIntBuffer();
-	     int[] reconstructedArray = new int[intBuf.remaining()];
+	     reconstructedArray = new int[intBuf.remaining()];
 		 intBuf.get(reconstructedArray);
 		 
-		 double[][] imgTmp = construct2rowArray(reconstructedArray);
-		 Matrix imgTmpMatrix = new Matrix(imgTmp);
-		 Matrix rotationMatrix = getRotationMatrix(theta);
-		 rotationMatrix = rotationMatrix.transpose();
-		 Matrix expandedImageMatrix = rotationMatrix.times(imgTmpMatrix);
-			
-		 double [][] expandedImageTmp = reshape(expandedImageMatrix.getArray(), width, height);
-		 
-		 double[][] expandedImage = rephaseImage(expandedImageTmp);		 
-		 
-		 reconstructedImage = convertDoubletoInt(expandedImage);
+		 totalSize = reconstructedArray.length;
+		 height = reconstructedArray[totalSize-1];
+		 width = reconstructedArray[totalSize-2];
+		 theta = reconstructedArray[totalSize-3];
+		 ratio = reconstructedArray[totalSize-4];
 		 
 	}
 	
@@ -111,8 +108,8 @@ public class ImageReconstruction {
 	 * @return
 	 */
 	private double[][] construct2rowArray(int[] reconstructedArray) {
-		double[][] imgTmp = new double[2][reconstructedArray.length - 3];
-		for (int i = 0; i<reconstructedArray.length - 3; i++) {
+		double[][] imgTmp = new double[2][reconstructedArray.length - 5];
+		for (int i = 0; i<reconstructedArray.length - 5; i++) {
 			imgTmp[0][i] = reconstructedArray[i];
 		}
 		imgTmp[1] = new double[imgTmp[0].length];
@@ -159,7 +156,53 @@ public class ImageReconstruction {
 			 }
  		 }
 		 
-		 return output;
+		 return  output;
 	 }
+	
+	public static int[][] reshapeInt(int[][] A, int m, int n) {
+		 
+		 int k = 0;
+		 int output[][] = new int[n][m];
+		 int oneDArray[] = new int[A[0].length*A.length];
+		 
+		 for (int i= 0; i < A.length; i++) {
+			 for ( int j = 0; j < A[0].length ; j++) {
+				 oneDArray[k] = A[i][j];
+				 k++;
+			 }
+		 }
+		 
+		 k = 0;
+		 for(int i = 0; i < n; i++) {
+			 for (int j = 0; j < m; j++) {
+				 output[i][j] = oneDArray[k];
+				 k++;
+			 }
+		 }
+		 
+		 return  output;
+	 }
+
+	@Override
+	public void run() {
+		 if (ratio != 1) {
+			 double[][] imgTmp = construct2rowArray(reconstructedArray);
+			 Matrix imgTmpMatrix = new Matrix(imgTmp);
+			 Matrix rotationMatrix = getRotationMatrix(theta);
+			 rotationMatrix = rotationMatrix.transpose();
+			 Matrix expandedImageMatrix = rotationMatrix.times(imgTmpMatrix);
+	
+			 double [][] expandedImageTmp = reshape(expandedImageMatrix.getArray(), width, height);
+			 double[][] expandedImage = rephaseImage(expandedImageTmp);		 
+		 
+			 reconstructedImage = convertDoubletoInt(expandedImage);
+		 	}
+		 	else {
+		 		int[][] img = new int[1][width*height];
+		 		img[0] = reconstructedArray;
+		 		reconstructedImage = reshapeInt(img, width, height);
+		 	}
+		
+	}
 
 }
