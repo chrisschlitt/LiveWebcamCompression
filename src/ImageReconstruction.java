@@ -77,12 +77,18 @@ public class ImageReconstruction implements Runnable{
 	 * @return
 	 */
 	private int[][] convertDoubletoInt(double[][] expandedImage) {
-		int[][] reconstructedImage = new int[expandedImage.length][expandedImage[0].length];
-		for(int i = 0; i < expandedImage.length; i++) {
-			for (int j= 0; j < expandedImage[0].length; j++) {
-				reconstructedImage[i][j] = (int)expandedImage[i][j];
+		int[][] reconstructedImage = null;
+		try{
+			reconstructedImage = new int[expandedImage.length][expandedImage[0].length];
+			for(int i = 0; i < expandedImage.length; i++) {
+				for (int j= 0; j < expandedImage[0].length; j++) {
+					reconstructedImage[i][j] = (int)expandedImage[i][j];
+				}
 			}
+		} catch(Exception e){
+			
 		}
+		
 		return reconstructedImage;
 	}
 	

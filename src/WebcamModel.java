@@ -33,7 +33,7 @@ public class WebcamModel implements Model {
     }
     
     public void closeConnection() {
-    	this.doneStreaming();
+    	// this.doneStreaming();
     	if (connection!=null) {
     		connection.close();
     	}
@@ -44,9 +44,11 @@ public class WebcamModel implements Model {
     }
     
     public void doneStreaming(){
-    	Webcam.shutdown();
-    	webcam.close();
     	this.doneStreaming = true;
+    	webcam.close();
+    	this.serverProcessPictureThread.interrupt();
+    	this.clientProcessPictureThread.interrupt();
+    	this.takePictureThread.interrupt();
     }
     
     /**
@@ -90,6 +92,13 @@ public class WebcamModel implements Model {
          */
         @Override
         public void run() {
+        	try{
+        		while(!WebcamModel.this.connection.continueStreaming){
+        			Thread.sleep(100);
+        		}
+        	} catch(Exception e){
+        		
+        	}
             try {
                 while (!WebcamModel.this.doneStreaming) {
                 	byte[] compressedBytes;
