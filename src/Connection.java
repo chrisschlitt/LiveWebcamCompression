@@ -633,13 +633,6 @@ public class Connection {
     
     
     
-    
- 
-    
-    
-    
-    
-    
     /**
      * A method to stream data
      * @param o: Object - The data to stream
@@ -676,27 +669,6 @@ public class Connection {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-    		
-    		
-    		
-    		// long startTime = System.currentTimeMillis();
-    		// System.out.println("Sending a stream object");
-            // Cast the object as a byte array
-            // byte[] data = (byte[])o;
-            /*
-            try{
-            	FileOutputStream fos = new FileOutputStream("test.txt");
-                fos.write(data);
-                fos.close();
-            } catch(Exception e){
-            	
-            }
-            
-            */
-            /*
-            
-            */
-            
             
     	}
     	
