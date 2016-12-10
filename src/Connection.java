@@ -732,6 +732,14 @@ public class Connection {
     }
     
     /**
+     * A method to reset the previous sent counter
+     * 
+     */
+    public void resetPreviousSentCounter(){
+    	this.previousSentCounter = 0;
+    }
+    
+    /**
      * A method to stream data
      * @param o: Object - The data to stream
      */

@@ -13,6 +13,7 @@ public class WebcamModel implements Model {
 	private static int numPictures=1;
 	public boolean doneStreaming = false;
 	private int compression = 2;
+	private int color = 0;
 	private Webcam webcam;
 	private Thread takePictureThread;
 	private Thread serverProcessPictureThread;
@@ -21,7 +22,7 @@ public class WebcamModel implements Model {
 	
 	private BlockingQueue<BufferedImage> imageQueue = new LinkedBlockingQueue<BufferedImage>();
     // The connection to the server
-    private Connection connection; 
+    public Connection connection; 
     
     /**
      * A method to setup the client server
@@ -31,6 +32,7 @@ public class WebcamModel implements Model {
     	connection = new Connection(8888, 4555, 6987, this);
         connection.connect();
     }
+
     
     public void closeConnection() {
     	// this.doneStreaming();
@@ -41,6 +43,10 @@ public class WebcamModel implements Model {
     
     public void setCompression(int compression) {
     	this.compression = compression;
+    }
+    
+    public void setColor(int color) {
+    	this.color = color;
     }
     
     public void doneStreaming(){
@@ -107,7 +113,7 @@ public class WebcamModel implements Model {
             		int g = 0;
             		int b = 0;
             		BufferedImage image = WebcamModel.this.imageQueue.take();
-            		RGBCompression rgbCompression = new RGBCompression(image, WebcamModel.this.compression, 0);
+            		RGBCompression rgbCompression = new RGBCompression(image, WebcamModel.this.compression, WebcamModel.this.color);
             		compressedBytes = rgbCompression.getCompressedImage();
         			sendPicture(compressedBytes);
                 }
