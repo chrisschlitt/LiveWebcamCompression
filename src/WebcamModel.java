@@ -32,6 +32,7 @@ public class WebcamModel implements Model {
     	connection = new Connection(8888, 4555, 6987, this);
         connection.connect();
     }
+
     
     public void closeConnection() {
     	// this.doneStreaming();

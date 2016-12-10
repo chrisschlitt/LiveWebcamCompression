@@ -1,23 +1,31 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
-public class MenuView extends JFrame {
-	
+public class WaitView extends JFrame {
 	JButton joinButton = new JButton("");
-	JLabel welcome;
+	JLabel details = new JLabel("Choose server to broadcast or client to receive video", SwingConstants.CENTER);
 	
-	public MenuView() {
+	public WaitView() {
 		JPanel mainMenu = new JPanel(new GridLayout(0,1));
 		JPanel top = new JPanel(new GridLayout(0,1));
-		this.welcome = new JLabel("Penn Skype");
-		this.welcome.setHorizontalAlignment(JLabel.CENTER);
-		this.welcome.setVerticalAlignment(JLabel.CENTER);
+		JLabel welcome = new JLabel("CONNECTING...");
+		welcome.setHorizontalAlignment(JLabel.CENTER);
+		welcome.setVerticalAlignment(JLabel.CENTER);
 		Font font = new Font("Arial", Font.BOLD,36);
-		this.welcome.setFont(font);
-		this.welcome.setForeground(Color.WHITE);
+		welcome.setFont(font);
+		welcome.setForeground(Color.WHITE);
 		font = new Font("Courier", Font.PLAIN, 20);
+		details.setFont(font);
 		top.add(welcome, BorderLayout.NORTH);
 		
 		JPanel buttonPanel = new JPanel();
@@ -40,10 +48,8 @@ public class MenuView extends JFrame {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		
 		this.setSize((int)tk.getScreenSize().getWidth(),(int)tk.getScreenSize().getHeight());
-	}
-	
-	public void addListener(ActionListener clientListener) {
-		joinButton.addActionListener(clientListener);
+		
+		
 	}
 	
 }
