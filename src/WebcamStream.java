@@ -18,6 +18,7 @@ public class WebcamStream {
 		displayView.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		WebcamModel webcamModel = new WebcamModel();
 		webcamModel.setView(displayView);
-		WebcamController controller = new WebcamController(menuView, displayView, webcamModel, webcam);	
+		WaitView waitView = new WaitView();
+		WebcamController controller = new WebcamController(menuView, displayView, waitView, webcamModel, webcam);	
 	}
 }

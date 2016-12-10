@@ -64,6 +64,18 @@ public class WebcamController {
 		}
 	}
 	
+	class ColorSelect implements ActionListener {
+		public void actionPerformed(ActionEvent ev) {
+			JRadioButton actedOn = (JRadioButton) ev.getSource();
+			String compressionString = actedOn.getText();
+			if (compressionString.equals("Color")) {
+				WebcamController.this.webcamModel.setColor(0);
+			} else if (compressionString.equals("B/W")) {
+				WebcamController.this.webcamModel.setColor(1);
+			}
+		}
+	}
+	
 	class CloseAction implements ActionListener {
 		public void actionPerformed(ActionEvent ev) {
 			webcamModel.closeConnection();

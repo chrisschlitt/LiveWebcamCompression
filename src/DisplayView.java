@@ -19,6 +19,9 @@ public class DisplayView extends JFrame {
 	JPanel panel = new JPanel();
 	JPanel videoComponents = new JPanel();
 	ButtonGroup buttonGroup = new ButtonGroup();
+	ButtonGroup colorGroup = new ButtonGroup();
+	JRadioButton colorButton = new JRadioButton("Color");
+	JRadioButton bwButton = new JRadioButton("B/W");
 	JRadioButton noCompressionButton = new JRadioButton("None");
 	JRadioButton quarterCompressionButton = new JRadioButton("1/4");
 	JRadioButton halfCompressionButton = new JRadioButton("1/2");
@@ -50,14 +53,22 @@ public class DisplayView extends JFrame {
 		buttonGroup.add(quarterCompressionButton);
 		buttonGroup.add(noCompressionButton);
 		JPanel radioPanel = new JPanel();
-		radioPanel.setLayout(new GridLayout(0,2));
+		radioPanel.setLayout(new GridLayout(0,3));
+		
+		colorGroup.add(colorButton);
+		colorGroup.add(bwButton);
+		JPanel colorButtons = new JPanel();
+		colorButtons.add(colorButton);
+		colorButtons.add(bwButton);
+		colorButton.setSelected(true);
+		
 		
 		JPanel buttons = new JPanel();
 		buttons.add(halfCompressionButton);
 		buttons.add(quarterCompressionButton);
 		buttons.add(noCompressionButton);
 		halfCompressionButton.setSelected(true);
-		
+		radioPanel.add(colorButtons);
 		radioPanel.add(buttons);
 		endButton.setPreferredSize(new Dimension(100,50));
 		endPanel.add(endButton);
@@ -83,6 +94,11 @@ public class DisplayView extends JFrame {
 	
 	public void addCloseListener(ActionListener closeListener) {
 		endButton.addActionListener(closeListener);
+	}
+	
+	public void addColorSelect(ActionListener colorButtonListener) {
+		colorButton.addActionListener(colorButtonListener);
+		bwButton.addActionListener(colorButtonListener);
 	}
 	
 	public void addSelectionListener(ActionListener selectionButtonListener) {
