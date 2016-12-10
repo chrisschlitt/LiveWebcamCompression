@@ -96,6 +96,11 @@ public class DisplayView extends JFrame {
 		endButton.addActionListener(closeListener);
 	}
 	
+	public void addColorSelect(ActionListener colorButtonListener) {
+		colorButton.addActionListener(colorButtonListener);
+		bwButton.addActionListener(colorButtonListener);
+	}
+	
 	public void addSelectionListener(ActionListener selectionButtonListener) {
         
         halfCompressionButton.addActionListener(selectionButtonListener);
