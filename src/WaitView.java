@@ -1,3 +1,7 @@
+/**
+ * The WaitView class represents the menu to be displayed
+ * while the system is loading the connection between users
+ */
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -9,13 +13,12 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 public class WaitView extends JFrame {
 	JButton joinButton = new JButton("");
-	JLabel details = new JLabel("Choose server to broadcast or client to receive video", SwingConstants.CENTER);
 	
 	public WaitView() {
+		
 		JPanel mainMenu = new JPanel(new GridLayout(0,1));
 		JPanel top = new JPanel(new GridLayout(0,1));
 		JLabel welcome = new JLabel("CONNECTING...");
@@ -25,7 +28,6 @@ public class WaitView extends JFrame {
 		welcome.setFont(font);
 		welcome.setForeground(Color.WHITE);
 		font = new Font("Courier", Font.PLAIN, 20);
-		details.setFont(font);
 		top.add(welcome, BorderLayout.NORTH);
 		
 		JPanel buttonPanel = new JPanel();
@@ -46,10 +48,9 @@ public class WaitView extends JFrame {
 		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Toolkit tk = Toolkit.getDefaultToolkit();
-		
-		this.setSize((int)tk.getScreenSize().getWidth(),(int)tk.getScreenSize().getHeight());
-		
-		
+		/**
+		 * Sets the menu to take up the full screen
+		 */
+		this.setSize((int)tk.getScreenSize().getWidth(),(int)tk.getScreenSize().getHeight());	
 	}
-	
 }

@@ -1,7 +1,12 @@
+/**
+ * The MenuView is the initial menu interface for the application.
+ * It simply includes a 'join' button that allows the user to connect
+ * to a web chat
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-
 
 public class MenuView extends JFrame {
 	
@@ -35,13 +40,19 @@ public class MenuView extends JFrame {
 		mainMenu.add(buttonPanel, BorderLayout.SOUTH);
 		mainMenu.setOpaque(false);
 		this.add(mainMenu, BorderLayout.CENTER);
-		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Toolkit tk = Toolkit.getDefaultToolkit();
 		
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		/**
+		 * Set the initial menu to take up the entire screen
+		 */
 		this.setSize((int)tk.getScreenSize().getWidth(),(int)tk.getScreenSize().getHeight());
 	}
 	
+	/**
+	 * Adds an actionlistener to the join button to dictate functionality of the button
+	 * @param clientListener
+	 */
 	public void addListener(ActionListener clientListener) {
 		joinButton.addActionListener(clientListener);
 	}
