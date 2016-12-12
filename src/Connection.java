@@ -716,18 +716,12 @@ public class Connection {
         			// Get the next queued stream data
         			StreamData streamData = Connection.this.sendQueue.take();
         			
-        			byte[] o = (byte[])streamData.data;
-        			
-        			
         			if(Connection.this.previousSent == null || Connection.this.previousSentCounter >= 200){
                     	/*
                     	 * If no initial image has been sent, or every 200 images, send the full image
                     	 */
                     	// Set the full image
-        				Connection.this.previousSent = (byte[])o;
-                    	
-                    	// Build the stream object
-                    	streamData = new StreamData(false, o);
+        				Connection.this.previousSent = (byte[])streamData.data;
                     	// Add to the counters
                     	Connection.this.compressedbytesSent = Connection.this.compressedbytesSent + (((byte[])streamData.data).length / 1024);
                     	Connection.this.bytesSent = Connection.this.bytesSent + (((byte[])streamData.data).length / 1024);
@@ -740,10 +734,11 @@ public class Connection {
                     	// Create the diff based on the previous image and the current image
                     	Diff diff = DifferencingLibrary.getDiff(Connection.this.previousSent, (byte[])o);
                     	// Set the previous image
-                    	Connection.this.previousSent = (byte[])o;
+                    	Connection.this.previousSent = (byte[])streamData.data;
                     	
                     	// Build the stream object
-                    	streamData = new StreamData(true, diff);
+                    	streamData.data = diff;
+                    	streamData.isDiff = true;
                     	// Add to the counters
                     	Connection.this.compressedbytesSent = Connection.this.compressedbytesSent + (diff.diffImage.length / 1024);
                     	Connection.this.bytesSent = Connection.this.bytesSent + (diff.length / 1024);
