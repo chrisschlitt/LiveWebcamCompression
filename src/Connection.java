@@ -260,8 +260,8 @@ public class Connection {
                     		Long time = Long.parseLong(timestamp);
                     		
                     		// Compare the timestamp with the timestamp this computer took
-                    		if(Connection.this.fixTime > time){
-                    			// This computer received the message second
+                    		if(Connection.this.fixTime < time){
+                    			// This computer received the message first
                     			// Convert this to client
                     			System.out.println("Converting to Client");
                     			// Set the server flag
