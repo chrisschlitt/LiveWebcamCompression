@@ -766,6 +766,7 @@ public class Connection {
      * 
      */
     public void resetPreviousSentCounter(){
+    	System.out.println("Resetting Counter");
     	this.previousSentCounter = 200;
     }
     
