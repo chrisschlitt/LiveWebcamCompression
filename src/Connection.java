@@ -732,7 +732,7 @@ public class Connection {
                     	 * If a full image has been sent, just send the difference
                     	 */
                     	// Create the diff based on the previous image and the current image
-                    	Diff diff = DifferencingLibrary.getDiff(Connection.this.previousSent, (byte[])o);
+                    	Diff diff = DifferencingLibrary.getDiff(Connection.this.previousSent, (byte[])streamData.data);
                     	// Set the previous image
                     	Connection.this.previousSent = (byte[])streamData.data;
                     	
