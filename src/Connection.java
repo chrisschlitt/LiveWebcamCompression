@@ -260,8 +260,8 @@ public class Connection {
                     		Long time = Long.parseLong(timestamp);
                     		
                     		// Compare the timestamp with the timestamp this computer took
-                    		if(Connection.this.fixTime > time){
-                    			// This computer received the message second
+                    		if(Connection.this.fixTime < time){
+                    			// This computer received the message first
                     			// Convert this to client
                     			System.out.println("Converting to Client");
                     			// Set the server flag
@@ -715,6 +715,36 @@ public class Connection {
         			n++;
         			// Get the next queued stream data
         			StreamData streamData = Connection.this.sendQueue.take();
+        			
+        			if(Connection.this.previousSent == null || Connection.this.previousSentCounter >= 200){
+                    	/*
+                    	 * If no initial image has been sent, or every 200 images, send the full image
+                    	 */
+                    	// Set the full image
+        				Connection.this.previousSent = (byte[])streamData.data;
+                    	// Add to the counters
+                    	Connection.this.compressedbytesSent = Connection.this.compressedbytesSent + (((byte[])streamData.data).length / 1024);
+                    	Connection.this.bytesSent = Connection.this.bytesSent + (((byte[])streamData.data).length / 1024);
+                    	// Reset the previous counter
+                    	Connection.this.previousSentCounter = 0;
+                    } else {
+                    	/*
+                    	 * If a full image has been sent, just send the difference
+                    	 */
+                    	// Create the diff based on the previous image and the current image
+                    	Diff diff = DifferencingLibrary.getDiff(Connection.this.previousSent, (byte[])o);
+                    	// Set the previous image
+                    	Connection.this.previousSent = (byte[])streamData.data;
+                    	
+                    	// Build the stream object
+                    	streamData.data = diff;
+                    	streamData.isDiff = true;
+                    	// Add to the counters
+                    	Connection.this.compressedbytesSent = Connection.this.compressedbytesSent + (diff.diffImage.length / 1024);
+                    	Connection.this.bytesSent = Connection.this.bytesSent + (diff.length / 1024);
+                    	Connection.this.previousSentCounter++;
+                    }
+        			
         			// Stream the data
                     Connection.this.outputStream.writeObject(streamData);
                     
@@ -736,7 +766,7 @@ public class Connection {
      * 
      */
     public void resetPreviousSentCounter(){
-    	this.previousSentCounter = 0;
+    	this.previousSentCounter = 200;
     }
     
     /**
@@ -747,38 +777,7 @@ public class Connection {
     	// Check if the system is still streaming
     	if(this.continueStreaming){
     		// Create the stream data object
-    		StreamData streamData;
-
-            if(this.previousSent == null || this.previousSentCounter >= 200){
-            	/*
-            	 * If no initial image has been sent, or every 200 images, send the full image
-            	 */
-            	// Set the full image
-            	this.previousSent = (byte[])o;
-            	
-            	// Build the stream object
-            	streamData = new StreamData(false, o);
-            	// Add to the counters
-            	this.compressedbytesSent = this.compressedbytesSent + (((byte[])streamData.data).length / 1024);
-            	this.bytesSent = this.bytesSent + (((byte[])streamData.data).length / 1024);
-            	// Reset the previous counter
-            	this.previousSentCounter = 0;
-            } else {
-            	/*
-            	 * If a full image has been sent, just send the difference
-            	 */
-            	// Create the diff based on the previous image and the current image
-            	Diff diff = DifferencingLibrary.getDiff(this.previousSent, (byte[])o);
-            	// Set the previous image
-            	this.previousSent = (byte[])o;
-            	
-            	// Build teh stream object
-            	streamData = new StreamData(true, diff);
-            	// Add to the counters
-            	this.compressedbytesSent = this.compressedbytesSent + (diff.diffImage.length / 1024);
-            	this.bytesSent = this.bytesSent + (diff.length / 1024);
-            	this.previousSentCounter++;
-            }
+    		StreamData streamData = new StreamData(false, o);
     		try {
     			
     			if (sendQueue.size()>5){
