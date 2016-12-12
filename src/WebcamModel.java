@@ -13,6 +13,8 @@ public class WebcamModel implements Model {
 	public boolean doneStreaming = false;
 	private int compression = 2;
 	private int color = 0;
+	private int previousCompression = 2;
+	private int previousColor = 0;
 	private Webcam webcam;
 	private Thread takePictureThread;
 	private Thread serverProcessPictureThread;
@@ -143,6 +145,11 @@ public class WebcamModel implements Model {
                 while (!WebcamModel.this.doneStreaming) {
                 	byte[] compressedBytes;
             		BufferedImage image = WebcamModel.this.imageQueue.take();
+            		if((WebcamModel.this.previousCompression != WebcamModel.this.compression) || (WebcamModel.this.previousColor != WebcamModel.this.color)){
+            			WebcamModel.this.previousCompression = WebcamModel.this.compression;
+            			WebcamModel.this.previousCompression = WebcamModel.this.compression;
+            			WebcamModel.this.connection.resetPreviousSentCounter();
+            		}
             		RGBCompression rgbCompression = new RGBCompression(image, WebcamModel.this.compression, WebcamModel.this.color);
             		compressedBytes = rgbCompression.getCompressedImage();
         			sendPicture(compressedBytes);
