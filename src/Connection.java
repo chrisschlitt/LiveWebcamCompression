@@ -37,44 +37,44 @@ public class Connection {
     // IncomingSocket
     private Socket incomingSocket;
     // A flag to continue listening for packets
-    public boolean continueListening;
+    private boolean continueListening;
     // A flag to start streaming
-    public boolean startStreaming;
+    private boolean startStreaming;
     // A flag to start streaming
-    public boolean continueStreaming;
+    private boolean continueStreaming;
     // Discovery Thread
-    public Thread discoveryThread;
+    private Thread discoveryThread;
     // Receiving Thread
-    public Thread listeningThread;
+    private Thread listeningThread;
     // Send Thread
-    public Thread endThread;
+    private Thread endThread;
     // End Thread
-    public Thread sendThread;
+    private Thread sendThread;
     // Output Socket
-    public Socket streamingSocket;
+    private Socket streamingSocket;
     // The receiving model for callbacks
-    public Model receivingModel;
+    private Model receivingModel;
     // Server indicator
-    public boolean isServer;
+    private boolean isServer;
     // Data Sent
-    public long bytesSent;
+    private long bytesSent;
     // Data Received
-    public long bytesReceived;
+    private long bytesReceived;
     // Data Sent
-    public long compressedbytesSent;
+    private long compressedbytesSent;
     // Data Received
-    public long compressedbytesReceived;
+    private long compressedbytesReceived;
     // Host Correction Timestamp
-    public long fixTime;
+    private long fixTime;
     
     // Differencing Library Resources
-    public int previousSentCounter;
-    public byte[] previousSent;
-    public byte[] previousReceived;
+    private int previousSentCounter;
+    private byte[] previousSent;
+    private byte[] previousReceived;
     
     // Queues
-    public BlockingQueue<StreamData> sendQueue = new LinkedBlockingQueue<StreamData>();
-    public BlockingQueue<StreamData> receiveQueue = new LinkedBlockingQueue<StreamData>();
+    private BlockingQueue<StreamData> sendQueue = new LinkedBlockingQueue<StreamData>();
+    private BlockingQueue<StreamData> receiveQueue = new LinkedBlockingQueue<StreamData>();
     
     /**
      * Constructor
@@ -163,12 +163,21 @@ public class Connection {
     }
     
     /**
+     * A method to get the number of bytes received during the session
+     * 
+     * @return bytesReceived: long
+     */
+    public boolean isStreaming(){
+    	return this.continueStreaming;
+    }
+    
+    /**
      * A runnable class to manage incoming packets
      *
      * @author christopherschlitt
      *
      */
-    public class DiscoveryThread implements Runnable {
+    private class DiscoveryThread implements Runnable {
     	// Discovery packet indicator
     	boolean receivedDiscovery = false;
     	// Stream ready packet indicator
@@ -330,7 +339,7 @@ public class Connection {
     /**
      * A method to start listening for packets
      */
-    public void beginPacketListening(){
+    private void beginPacketListening(){
         // Set the packet listening flag
         this.continueListening = true;
         // Create a new discovery thread
@@ -348,7 +357,7 @@ public class Connection {
      * @param address: InetAddress - IP address to send the packet to
      * @return success: boolean - Success flag
      */
-    public boolean sendPacketData(byte[] data, InetAddress address) throws IOException{
+    private boolean sendPacketData(byte[] data, InetAddress address) throws IOException{
     	// Send three packets, to ensure delivery
     	for(int i=0; i < 3; i++){
     		// Initiate the DatagramSocket
@@ -378,13 +387,13 @@ public class Connection {
      * @author christopherschlitt
      *
      */
-    public class DiscoverThread implements Runnable {
+    private class DiscoverThread implements Runnable {
     	
     	/**
     	 * A method to discover the server on the network, and all subnets
     	 * 
     	 */
-    	public void findServer() throws Exception{
+    	private void findServer() throws Exception{
     		
     		// Print looking for the server
         	System.out.println("Looking for the Server...");
@@ -509,7 +518,7 @@ public class Connection {
      * an efficient manner
      *
      */
-    public void discoverIP() throws Exception{
+    private void discoverIP() throws Exception{
     	// Number of discovery threads to run
     	int numThreads = 6;
     	// The current thread
@@ -540,14 +549,14 @@ public class Connection {
      * @author christopherschlitt
      *
      */
-    public class ListeningThread implements Runnable {
+    private class ListeningThread implements Runnable {
         
         /**
          * A method to prepare the receiving connection
          *
          * @return success: boolean - A success flag
          */
-        public boolean prepareReceivingConnection() throws IOException{
+    	private boolean prepareReceivingConnection() throws IOException{
             // Create the socket
         	try{
         		Connection.this.serverSocket = new ServerSocket(Connection.this.incomingPort);
@@ -647,7 +656,7 @@ public class Connection {
     /**
      * A method to prepare to receive a stream
      */
-    public void beginListeningForStream() throws IOException{
+    private void beginListeningForStream() throws IOException{
     	
     	// Set the continue listening flag
     	this.continueListening = true;
@@ -661,7 +670,7 @@ public class Connection {
     /**
      * A method to begin streaming from the server
      */
-    public void beginStreaming(){
+    private void beginStreaming(){
     	
         // Open the socket to the client
         try {
@@ -695,7 +704,7 @@ public class Connection {
      * @author christopherschlitt
      *
      */
-    public class SendThread implements Runnable {  
+    private class SendThread implements Runnable {  
 
         /**
          * The run method
@@ -798,7 +807,7 @@ public class Connection {
      * @author christopherschlitt
      *
      */
-    public class EndThread implements Runnable {
+    private class EndThread implements Runnable {
     	// A received end packet flag
     	boolean receivedEnd = false;
     	
@@ -854,7 +863,7 @@ public class Connection {
     /**
      * A method to close the connections
      */
-    public void exit(){
+    private void exit(){
     	// Print stats
     	DecimalFormat formatter = new DecimalFormat("###,###,###");
     	DecimalFormat formatter1 = new DecimalFormat("##");

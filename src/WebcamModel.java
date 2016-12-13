@@ -130,7 +130,7 @@ public class WebcamModel implements Model {
         @Override
         public void run() {
         	try{
-        		while(!WebcamModel.this.connection.continueStreaming){
+        		while(!WebcamModel.this.connection.isStreaming()){
         			Thread.sleep(100);
         		}
         	} catch(Exception e){
