@@ -17,7 +17,7 @@ In addition to the sending and receiving of data, the connection also manages th
 Both the normal and the race condition described here are outlined in sequence level diagrams.
 
 ——
-Execution steps: Execute PennSkype.jar on two different computers with a webcam. Click the PennSkype icon on both computers (This does not have to be simultaneously clicked). You will see the screen change to connecting as it looks for the other computer. Once found your web conference should begin on both computers. Clicking on the icons will modify the functionality. Click end to stop the conference.
+Execution steps: Execute PennSkype.jar on two different computers with a webcam CONNECTED TO THE SAME WIFI NETWORK. Click the PennSkype icon on BOTH computers one after the other (This does not have to be simultaneously clicked). You will see the screen change to connecting as it looks for the other computer. Once found your web conference should begin on both computers. Clicking on the buttons will modify the functionality. Click end to stop the conference. 
 
 In addition to including the code, an executable jar is included, allowing the program to be run outside of eclipse and without importing additional libraries.  In order to create this, the program was exported in eclipse into an “executable jar” with the external libraries included.
 
