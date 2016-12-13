@@ -31,10 +31,10 @@ Github Repo: https://github.com/chrisschlitt/WebcamCompression
 Completed Requirements:
 Group 1:
  -Formal Design (Sequence Diagram)
- -Interfaces (Model)
+ -Interfaces (Model, Good coupling between classes)
  -Design Pattern (MVC)
 Group 2:
  -Data Structures (BlockingQueue)
  -Java Graphics (UI)
- -Multithreading (Connection, Taking Pictures, Compression, etc.)
- -Advanced Topics (External Libraries, Networking)
+ -Multithreading (Connection, Taking Pictures, Compression/Reconstruction, etc.)
+ -Advanced Topics (External Libraries, Networking, Computer Vision)
