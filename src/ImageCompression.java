@@ -3,31 +3,46 @@ import java.nio.IntBuffer;
 
 import Jama.*; 
 
+/**
+ * This is the Main Compression class that implements PCA
+ * 
+ * @author jacob
+ *
+ */
 public class ImageCompression implements Runnable{
-	private double[][] originalImage; 
+	
+//	Local Variables
+	private double[][] originalImage;   
 	private double[] compressedImage;
 	private byte[] compressedImageBytes;
-	private double[][] expandedImage;
 	private int width;
 	private int height;
 	private int totalSize;
 	private int ratio;
 	private int[][] image;
 	private int color;
+	
+	
 	/**
 	 * Constructor takes the original image and compresses it
 	 * @param image
 	 */
 	public ImageCompression(int[][] image, int ratio, int color) {
-		originalImage = new double[image.length][image[0].length];
-		this.ratio = ratio;		
-		width = image[0].length;
-		height = image.length;
-		totalSize = image.length*image[0].length;
-		this.image = image;
-		this.color = color;
+		
+//		Set all the static variables. This is done to remove memory constraints
+		originalImage = new double[image.length][image[0].length]; // original Image
+		this.ratio = ratio;		// Compression ratio
+		width = image[0].length;// Width
+		height = image.length;  // Height
+		totalSize = image.length*image[0].length;// Total size
+		this.image = image; // Image
+		this.color = color; // B/W(1) or RGB(0)
 	}
-
+	
+	/**
+	 * When no compression is requested do not perform
+	 * @param image
+	 */
 	private void donotPerformCompression(int[][] image) {
 		int k = 0;
 		double uncompressedImage[] = new double[totalSize];
@@ -43,7 +58,10 @@ public class ImageCompression implements Runnable{
 		
 		compressedImageBytes =  setupDataForCompression(uncompressedImage, 0, ratio, color);
 	}
-
+	/**
+	 * When compression is expected , compression factor set to 2
+	 * @param image
+	 */
 	private void performCompression(int[][] image) {
 		//Converting original image from int to double
 		for(int i = 0; i < image.length; i++)
@@ -73,6 +91,7 @@ public class ImageCompression implements Runnable{
 		// Calculate rotation factor
 		double theta = Math.atan((singularValues[0] - covArray[0][0])/covArray[1][0]);
 	
+		// get the Prinicpal components and the compressed data
 		Matrix rotationMatrix = getRotationMatrix(theta);
 		Matrix compressedImageMatrix = rotationMatrix.times(resizeMatrixZ);
 		double imgTmp[][] = compressedImageMatrix.getArray();
@@ -83,7 +102,7 @@ public class ImageCompression implements Runnable{
 	/**
 	 * Given theta , get the rotation matrix
 	 * @param theta2
-	 * @return
+	 * @return Rotation Matrix
 	 */
 	private Matrix getRotationMatrix(double theta) {
 		// Rotation Matrix
@@ -109,6 +128,7 @@ public class ImageCompression implements Runnable{
 		for (int i = 0; i<compressedImage.length; i ++ ) {
 			compressedImageInt[i] = (int)compressedImage[i];
 		}
+//		Ad the parameters to the compressed image
 		compressedImageInt[compressedImageInt.length - 1] = height;
 		compressedImageInt[compressedImageInt.length - 2] = width;
 		compressedImageInt[compressedImageInt.length - 3] = (int)(theta*10000000);
@@ -135,7 +155,7 @@ public class ImageCompression implements Runnable{
 	 * @param A
 	 * @param m
 	 * @param n
-	 * @return
+	 * @return Reshapeed array
 	 */
 	static double[][] reshape(double[][] A, int m, int n) {
 	        int origM = A.length;
@@ -145,14 +165,16 @@ public class ImageCompression implements Runnable{
 	        }
 	        double[][] B = new double[m][n];
 	        double[] A1D = new double[A.length * A[0].length];
-
+	        
+	        // Convert to 1D Array
 	        int index = 0;
 	        for(int i = 0;i<A.length;i++){
 	            for(int j = 0;j<A[0].length;j++){
 	                A1D[index++] = A[i][j];
 	            }
 	        }
-
+	        
+	        // Reshape the array
 	        index = 0;
 	        for(int i = 0;i<n;i++){
 	            for(int j = 0;j<m;j++){
@@ -162,7 +184,10 @@ public class ImageCompression implements Runnable{
 	        }
 	        return B;
 	    }
-
+	
+	/**
+	 * Thread Run method
+	 */
 	@Override
 	public void run() {
 		if (ratio != 1)

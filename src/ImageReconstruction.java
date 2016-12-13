@@ -4,7 +4,13 @@ import java.nio.IntBuffer;
 
 import Jama.Matrix;
 
+/**
+ * This is the Main Reconstruction class that implements reverse PCA
+ * @author jacob
+ *
+ */
 public class ImageReconstruction implements Runnable{
+//	Instance Variables
 	private int[][] reconstructedImage;
 	double theta;
 	int ratio;
@@ -24,6 +30,7 @@ public class ImageReconstruction implements Runnable{
 	     reconstructedArray = new int[intBuf.remaining()];
 		 intBuf.get(reconstructedArray);
 		 
+//		 Extract the parameters from the compressed image
 		 totalSize = reconstructedArray.length;
 		 height = reconstructedArray[totalSize-1];
 		 width = reconstructedArray[totalSize-2];
@@ -74,7 +81,7 @@ public class ImageReconstruction implements Runnable{
 	/**
 	 * Convert from Double to Int array
 	 * @param expandedImage
-	 * @return
+	 * @return Int Array
 	 */
 	private int[][] convertDoubletoInt(double[][] expandedImage) {
 		int[][] reconstructedImage = null;
@@ -95,7 +102,7 @@ public class ImageReconstruction implements Runnable{
 	/**
 	 * Get the rotation matrix from theta
 	 * @param theta2
-	 * @return
+	 * @return Rotation Matrix
 	 */
 	private Matrix getRotationMatrix(double theta) {
 		// Rotation Matrix
@@ -112,7 +119,7 @@ public class ImageReconstruction implements Runnable{
 	/**
 	 * Construct 2 row array from the compressed data
 	 * @param reconstructedArray
-	 * @return
+	 * @return 2 Row array
 	 */
 	private void construct2rowArray(int[] reconstructedArray) {
 		imgTmp = new double[2][reconstructedArray.length - 5];
@@ -128,7 +135,7 @@ public class ImageReconstruction implements Runnable{
 	
 	/**
 	 * Getter for reconstructed Image
-	 * @return
+	 * @return ReconstructedImage
 	 */
 	public int[][] getReconstructedImage(){
 		return reconstructedImage;
@@ -164,7 +171,13 @@ public class ImageReconstruction implements Runnable{
 		 
 		 return  output;
 	 }
-	
+	/**
+	 * For a non compressed image
+	 * @param A
+	 * @param m
+	 * @param n
+	 * @return
+	 */
 	public static int[][] reshapeInt(int[][] A, int m, int n) {
 		 
 		 int k = 0;
@@ -188,7 +201,10 @@ public class ImageReconstruction implements Runnable{
 		 
 		 return  output;
 	 }
-
+	
+	/**
+	 * Run method for thread
+	 */
 	@Override
 	public void run() {
 		 if (ratio != 1) {
